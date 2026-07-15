@@ -171,8 +171,8 @@ if page == "📊 Overview":
                       color_discrete_map=TEAM_COLORS,
                       labels={'period_month':'Month','effectiveness':'Score','team':'Team'},
                       markers=True)
-        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                          font_color='#e2e8f0', legend_title_text='',
+        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                          font_color='#1e293b', legend_title_text='',
                           xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -192,8 +192,8 @@ if page == "📊 Overview":
                       color_discrete_map=TEAM_COLORS, text='pct',
                       labels={'pct':'Completion %','team':'Team'})
         fig2.update_traces(texttemplate='%{text}%', textposition='outside')
-        fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                           font_color='#e2e8f0', showlegend=False,
+        fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                           font_color='#1e293b', showlegend=False,
                            xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155', range=[0,105]))
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -209,8 +209,8 @@ if page == "📊 Overview":
         fig3 = px.area(quota, x='period_month', y='quota_pct', color='team',
                        color_discrete_map=TEAM_COLORS,
                        labels={'quota_pct':'Quota Attainment %','period_month':'Month'})
-        fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                           font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
+        fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                           font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig3, use_container_width=True)
 
@@ -229,8 +229,8 @@ if page == "📊 Overview":
                           color_discrete_map=TEAM_COLORS, hover_name='name',
                           trendline='ols',
                           labels={'total_sessions':'Total Sessions','avg_win_rate':'Avg Win Rate %'})
-        fig4.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                           font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
+        fig4.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                           font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig4, use_container_width=True)
 
@@ -251,8 +251,8 @@ elif page == "👥 Team Analytics":
         fig = px.bar(team_sum, x='period_month', y='avg_effectiveness', color='team',
                      barmode='group', color_discrete_map=TEAM_COLORS,
                      labels={'avg_effectiveness':'Effectiveness Score','period_month':'Month'})
-        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                          font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
+        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                          font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
                           yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -265,7 +265,7 @@ elif page == "👥 Team Analytics":
             texttemplate='%{text}', showscale=True,
             colorbar=dict(title='Score')
         ))
-        fig2.update_layout(paper_bgcolor='#1e293b', font_color='#e2e8f0',
+        fig2.update_layout(paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b',
                            xaxis_title='Month', yaxis_title='Team')
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -317,8 +317,8 @@ elif page == "🧠 Skill Progression":
         melted = avg_skills.melt('period_month', var_name='Skill', value_name='Score')
         fig = px.line(melted, x='period_month', y='Score', color='Skill', markers=True,
                       color_discrete_sequence=COLORS)
-        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                          font_color='#e2e8f0', yaxis=dict(range=[1,5], gridcolor='#334155'),
+        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                          font_color='#1e293b', yaxis=dict(range=[1,5], gridcolor='#334155'),
                           xaxis=dict(gridcolor='#334155'), legend_title_text='')
         st.plotly_chart(fig, use_container_width=True)
 
@@ -335,7 +335,7 @@ elif page == "🧠 Skill Progression":
             fig2.update_layout(polar=dict(bgcolor='#0f172a',
                                           radialaxis=dict(range=[0,5], gridcolor='#334155'),
                                           angularaxis=dict(gridcolor='#334155')),
-                                paper_bgcolor='#1e293b', font_color='#e2e8f0', showlegend=False)
+                                paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b', showlegend=False)
             st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown('<div class="section-title">Month-over-Month Skill Improvement</div>', unsafe_allow_html=True)
@@ -371,7 +371,7 @@ elif page == "📅 Session Insights":
         sc_cnt = sessions.groupby('scenario')['status'].count().reset_index(name='count')
         fig = px.pie(sc_cnt, names='scenario', values='count',
                      color_discrete_sequence=COLORS, hole=0.45)
-        fig.update_layout(paper_bgcolor='#1e293b', font_color='#e2e8f0', legend_title_text='')
+        fig.update_layout(paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b', legend_title_text='')
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -380,8 +380,8 @@ elif page == "📅 Session Insights":
         fig2 = px.bar(st_cnt, x='period_month', y='count', color='status', barmode='stack',
                       color_discrete_sequence=COLORS,
                       labels={'count':'Sessions','period_month':'Month'})
-        fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                           font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
+        fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                           font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'), legend_title_text='Status')
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -392,8 +392,8 @@ elif page == "📅 Session Insights":
     fig3 = px.bar(dur, x='avg_duration', y='scenario', orientation='h',
                   color='avg_duration', color_continuous_scale='Blues',
                   labels={'avg_duration':'Avg Duration (min)','scenario':'Scenario'})
-    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b',
-                       font_color='#e2e8f0', coloraxis_showscale=False,
+    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
+                       font_color='#1e293b', coloraxis_showscale=False,
                        xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
     st.plotly_chart(fig3, use_container_width=True)
 
@@ -424,7 +424,7 @@ elif page == "🔍 Rep Deep Dive":
         st.markdown('<div class="section-title">Coaching Effectiveness Trend</div>', unsafe_allow_html=True)
         fig = px.line(eff, x='period_month', y='coaching_effectiveness_score',
                       markers=True, color_discrete_sequence=['#38bdf8'])
-        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b', font_color='#e2e8f0',
+        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b',
                           xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -442,7 +442,7 @@ elif page == "🔍 Rep Deep Dive":
             fig2.update_layout(polar=dict(bgcolor='#0f172a',
                                           radialaxis=dict(range=[0,5], gridcolor='#334155'),
                                           angularaxis=dict(gridcolor='#334155')),
-                                paper_bgcolor='#1e293b', font_color='#e2e8f0', showlegend=False)
+                                paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b', showlegend=False)
             st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown('<div class="section-title">Business Metrics Over Time</div>', unsafe_allow_html=True)
@@ -451,7 +451,7 @@ elif page == "🔍 Rep Deep Dive":
                           marker_color='#38bdf8'), secondary_y=False)
     fig3.add_trace(go.Scatter(x=bi['period_month'], y=bi['win_rate']*100, name='Win Rate %',
                               mode='lines+markers', line=dict(color='#f472b6')), secondary_y=True)
-    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='#1e293b', font_color='#e2e8f0',
+    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b',
                        xaxis=dict(gridcolor='#334155'), legend_title_text='')
     fig3.update_yaxes(gridcolor='#334155', secondary_y=False, title_text='Deals Closed')
     fig3.update_yaxes(gridcolor='#334155', secondary_y=True,  title_text='Win Rate %')
