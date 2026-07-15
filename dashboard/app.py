@@ -24,26 +24,27 @@ except Exception:
 
 from groq import Groq
 
+import subprocess
+
 # DB path — use /tmp on cloud, %TEMP% locally
 DB = os.path.join(os.environ.get('TEMP', '/tmp'), 'coachsphere.db')
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-# Auto-generate DB if tables don't exist (needed on Streamlit Cloud)
-def _db_needs_setup():
+def _db_ready():
+    """Returns True if DB exists and has the users table populated."""
     try:
         conn = sqlite3.connect(DB)
-        count = conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users'").fetchone()[0]
+        count = conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users'"
+        ).fetchone()[0]
         conn.close()
-        return count == 0
+        return count > 0
     except Exception:
-        return True
+        return False
 
-if _db_needs_setup():
-    ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    sys.path.insert(0, ROOT)
-    from data.generate_data import main as gen_data
-    from metrics.apply_metrics import main as apply_metrics
-    gen_data()
-    apply_metrics()
+if not _db_ready():
+    subprocess.run([sys.executable, os.path.join(ROOT, 'data', 'generate_data.py')], check=True)
+    subprocess.run([sys.executable, os.path.join(ROOT, 'metrics', 'apply_metrics.py')], check=True)
 
 st.set_page_config(
     page_title="CoachSphere Analytics",
