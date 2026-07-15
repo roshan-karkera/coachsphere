@@ -128,15 +128,8 @@ def main():
     for sql in VIEWS:
         conn.execute(sql.strip())
     conn.commit()
-
-    views = conn.execute("SELECT name FROM sqlite_master WHERE type='view'").fetchall()
-    print("Views created:")
-    for v in views:
-        row = conn.execute(f"SELECT COUNT(*) FROM {v[0]}").fetchone()
-        print(f"  {v[0]}: {row[0]} rows")
-
     conn.close()
-    print("\nMetrics layer ready.")
+    print("Metrics layer ready.")
 
 
 if __name__ == '__main__':
