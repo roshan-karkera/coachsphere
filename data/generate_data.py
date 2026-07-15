@@ -14,7 +14,7 @@ fake = Faker()
 random.seed(42)
 np.random.seed(42)
 
-DB_PATH = os.path.join(os.environ.get('TEMP', os.path.expanduser('~')), 'coachsphere.db')
+DB_PATH = os.path.join(os.environ.get('TEMP', '/tmp'), 'coachsphere.db')
 
 TEAMS       = ['Enterprise', 'SMB', 'EMEA', 'APAC']
 REGIONS     = {'Enterprise': 'Germany', 'SMB': 'Germany', 'EMEA': 'UK', 'APAC': 'Singapore'}
