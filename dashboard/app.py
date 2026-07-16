@@ -125,7 +125,21 @@ team_filter = "','".join(sel_teams) if sel_teams else "''"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 if page == "📊 Overview":
-    st.markdown("# Platform Overview")
+    st.markdown("""
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+        <svg width="52" height="52" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
+            <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
+            <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
+            <rect x="28" y="16" width="6" height="22" rx="1.5" fill="white"/>
+            <polyline points="13,22 22,16 31,10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <circle cx="13" cy="22" r="2" fill="white"/>
+            <circle cx="22" cy="16" r="2" fill="white"/>
+            <circle cx="31" cy="10" r="2" fill="white"/>
+        </svg>
+        <h1 style="margin:0;padding:0;font-size:2rem;font-weight:700;">Platform Overview</h1>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown(f"**Platform metrics · {sel_month}** — all coaching activity across {len(sel_teams)} teams")
 
     # KPI cards
