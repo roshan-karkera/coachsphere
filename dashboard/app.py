@@ -13,6 +13,7 @@ import streamlit as st
 
 import os
 import sys
+import json
 
 # Load API key — Streamlit Cloud secrets take priority, then .env for local dev
 try:
@@ -491,70 +492,215 @@ elif page == "📋 Metric Definitions":
 
 elif page == "🤖 AI Assistant":
     st.markdown("# 🤖 AI Assistant")
-    st.markdown("Ask any question about your coaching data in plain English. Powered by **Groq · Llama 3.3 70B**.")
-
-    SCHEMA = """
-    You are a SQL expert querying a SQLite database for CoachSphere, an AI sales coaching analytics platform.
-    Data covers Jan 2024 to Jun 2024. period_month format is 'YYYY-MM' (e.g. '2024-01' to '2024-06').
-    Teams are: Enterprise, SMB, EMEA, APAC.
-
-    CRITICAL RULES:
-    1. ALWAYS use the views below for any metric, skill, business, or engagement questions. Never query raw tables for these.
-    2. business_metrics raw table has NO team column — always use v_business_impact view which has team.
-    3. Use EXACT column names as listed — do not guess or add prefixes like avg_.
-    4. Return ONLY a valid SQLite SELECT statement. No markdown, no explanation, no code fences.
-
-    VIEWS (preferred — use these always):
-    v_coaching_effectiveness: user_id, name, team, period_month, engagement_score, skill_score, communication_quality_score, business_impact_index, coaching_effectiveness_score
-    v_business_impact: user_id, name, team, period_month, deals_closed, win_rate, avg_deal_size, pipeline_value, quota_attainment, sessions_completed, business_impact_index
-    v_skill_progression: user_id, name, team, period_month, communication, product_knowledge, objection_handling, closing_technique, active_listening, avg_overall_score, assessments_count
-    v_session_engagement: user_id, name, team, period_month, sessions_scheduled, sessions_completed, avg_duration_min, feedback_submitted, engagement_score
-    v_communication_quality: user_id, name, team, period_month, avg_engagement, avg_clarity, avg_confidence, communication_quality_score, feedback_count
-    v_team_summary: team, period_month, active_reps, avg_engagement, avg_effectiveness
-
-    RAW TABLES (only for session-level or user-level queries):
-    users: user_id, name, email, role, team, region, hire_date, manager_id
-    coaching_sessions: session_id, user_id, scenario, scheduled_at, duration_minutes, status ('completed','started','missed')
-    skill_assessments: assessment_id, session_id, user_id, assessed_at, communication, product_knowledge, objection_handling, closing_technique, active_listening, overall_score
-    session_feedback: feedback_id, session_id, user_id, given_at, engagement_score, clarity_score, confidence_score, overall_score
-    business_metrics: metric_id, user_id, period_month, deals_closed, pipeline_value, win_rate, avg_deal_size, quota_attainment, sessions_completed (NO team column)
-
-    EXAMPLE QUERIES:
-    Q: Which team has the highest quota attainment?
-    A: SELECT team, ROUND(AVG(quota_attainment)*100,1) AS avg_quota_pct FROM v_business_impact GROUP BY team ORDER BY avg_quota_pct DESC LIMIT 1
-
-    Q: Top 5 reps by coaching effectiveness in June 2024?
-    A: SELECT name, team, coaching_effectiveness_score FROM v_coaching_effectiveness WHERE period_month='2024-06' ORDER BY coaching_effectiveness_score DESC LIMIT 5
-
-    Q: Reps whose objection handling improved most over 6 months?
-    A: SELECT name, team, MIN(objection_handling) AS start_score, MAX(objection_handling) AS end_score, ROUND(MAX(objection_handling)-MIN(objection_handling),2) AS improvement FROM v_skill_progression GROUP BY user_id, name, team ORDER BY improvement DESC LIMIT 10
-
-    Q: How many sessions were missed each month?
-    A: SELECT strftime('%Y-%m', scheduled_at) AS month, COUNT(*) AS missed FROM coaching_sessions WHERE status='missed' GROUP BY month ORDER BY month
-
-    Q: Which rep closed the most deals in May 2024?
-    A: SELECT name, team, deals_closed FROM v_business_impact WHERE period_month='2024-05' ORDER BY deals_closed DESC LIMIT 1
-    """
+    st.markdown("Ask any question about your coaching data in plain English. Powered by **Groq · Llama 3.3 70B** with **tool-calling**.")
 
     if not GROQ_API_KEY:
         st.error("Groq API key not found. Add GROQ_API_KEY to your .env file.")
         st.stop()
 
-    # Initialise chat history
+    # ── Tool definitions ──────────────────────────────────────────────────
+    TOOLS = [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_top_performers",
+                "description": "Get top N sales reps ranked by coaching effectiveness score for a given month.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "month": {"type": "string", "description": "Period month YYYY-MM e.g. '2024-06'"},
+                        "team":  {"type": "string", "description": "Team filter: Enterprise, SMB, EMEA, APAC, or 'all'"},
+                        "limit": {"type": "integer", "description": "How many reps to return (default 5)"}
+                    },
+                    "required": ["month"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_team_summary",
+                "description": "Get team-level performance: engagement score, effectiveness score, active rep count per month.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "month": {"type": "string", "description": "Period month YYYY-MM, or 'all' for every month"}
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_quota_attainment",
+                "description": "Get average quota attainment %, win rate, and deals closed by team.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "month": {"type": "string", "description": "Period month YYYY-MM, or 'all' for every month"},
+                        "team":  {"type": "string", "description": "Team name or 'all'"}
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_session_stats",
+                "description": "Get coaching session counts: scheduled, completed, missed, and completion rate by team and month.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "month": {"type": "string", "description": "Period month YYYY-MM, or 'all' for every month"},
+                        "team":  {"type": "string", "description": "Team name or 'all'"}
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_skill_improvement",
+                "description": "Find reps who improved the most in a specific skill (or overall) across the 6-month period.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "skill": {
+                            "type": "string",
+                            "description": "Skill to rank by: communication, product_knowledge, objection_handling, closing_technique, active_listening, or 'overall'"
+                        },
+                        "limit": {"type": "integer", "description": "Number of top improvers to return (default 10)"}
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_rep_profile",
+                "description": "Get full coaching history for a specific sales rep: effectiveness, skills, quota, deals over all months.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "rep_name": {"type": "string", "description": "Full or partial name of the sales rep"}
+                    },
+                    "required": ["rep_name"]
+                }
+            }
+        }
+    ]
+
+    # ── Tool execution ────────────────────────────────────────────────────
+    def run_tool(name, args):
+        conn = sqlite3.connect(DB)
+        try:
+            month = args.get("month", "all")
+            team  = args.get("team",  "all")
+            limit = args.get("limit", 10)
+            mf = f"AND period_month = '{month}'" if month and month != "all" else ""
+            tf = f"AND team = '{team}'"          if team  and team  != "all" else ""
+
+            if name == "get_top_performers":
+                lim = args.get("limit", 5)
+                df = pd.read_sql_query(f"""
+                    SELECT name, team, period_month,
+                           ROUND(coaching_effectiveness_score,3) AS effectiveness,
+                           ROUND(engagement_score,3)             AS engagement,
+                           ROUND(skill_score,3)                  AS skill_score
+                    FROM v_coaching_effectiveness
+                    WHERE 1=1 {mf} {tf}
+                    ORDER BY coaching_effectiveness_score DESC LIMIT {lim}
+                """, conn)
+
+            elif name == "get_team_summary":
+                df = pd.read_sql_query(f"""
+                    SELECT team, period_month, active_reps,
+                           ROUND(avg_engagement,3)    AS avg_engagement,
+                           ROUND(avg_effectiveness,3) AS avg_effectiveness
+                    FROM v_team_summary WHERE 1=1 {mf}
+                    ORDER BY period_month, avg_effectiveness DESC
+                """, conn)
+
+            elif name == "get_quota_attainment":
+                df = pd.read_sql_query(f"""
+                    SELECT team, period_month,
+                           ROUND(AVG(quota_attainment)*100,1) AS avg_quota_pct,
+                           ROUND(AVG(win_rate)*100,1)         AS avg_win_rate_pct,
+                           SUM(deals_closed)                  AS total_deals
+                    FROM v_business_impact WHERE 1=1 {mf} {tf}
+                    GROUP BY team, period_month
+                    ORDER BY period_month, avg_quota_pct DESC
+                """, conn)
+
+            elif name == "get_session_stats":
+                df = pd.read_sql_query(f"""
+                    SELECT team, period_month,
+                           SUM(sessions_scheduled) AS scheduled,
+                           SUM(sessions_completed) AS completed,
+                           ROUND(CAST(SUM(sessions_completed) AS REAL)/SUM(sessions_scheduled)*100,1) AS completion_pct
+                    FROM v_session_engagement WHERE 1=1 {mf} {tf}
+                    GROUP BY team, period_month ORDER BY period_month
+                """, conn)
+
+            elif name == "get_skill_improvement":
+                skill = args.get("skill", "overall")
+                lim   = args.get("limit", 10)
+                col   = "avg_overall_score" if skill in ("overall","") or skill not in [
+                    "communication","product_knowledge","objection_handling",
+                    "closing_technique","active_listening"
+                ] else skill
+                df = pd.read_sql_query(f"""
+                    SELECT name, team,
+                           ROUND(MIN({col}),2)            AS start_score,
+                           ROUND(MAX({col}),2)            AS end_score,
+                           ROUND(MAX({col})-MIN({col}),2) AS improvement
+                    FROM v_skill_progression
+                    GROUP BY user_id, name, team
+                    ORDER BY improvement DESC LIMIT {lim}
+                """, conn)
+
+            elif name == "get_rep_profile":
+                rep = args.get("rep_name","")
+                df = pd.read_sql_query(f"""
+                    SELECT ce.name, ce.team, ce.period_month,
+                           ROUND(ce.coaching_effectiveness_score,3) AS effectiveness,
+                           ROUND(ce.engagement_score,3)             AS engagement,
+                           ROUND(ce.skill_score,3)                  AS skill_score,
+                           ROUND(bi.quota_attainment*100,1)         AS quota_pct,
+                           bi.deals_closed,
+                           ROUND(bi.win_rate*100,1)                 AS win_rate_pct
+                    FROM v_coaching_effectiveness ce
+                    LEFT JOIN v_business_impact bi
+                        ON ce.user_id=bi.user_id AND ce.period_month=bi.period_month
+                    WHERE ce.name LIKE '%{rep}%'
+                    ORDER BY ce.period_month
+                """, conn)
+            else:
+                df = pd.DataFrame({"error": [f"Unknown tool: {name}"]})
+
+            return df.to_dict("records")
+        except Exception as e:
+            return [{"error": str(e)}]
+        finally:
+            conn.close()
+
+    # ── Chat history ──────────────────────────────────────────────────────
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # Display all messages from history
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
-            if msg.get("sql"):
-                with st.expander("🔍 Generated SQL"):
-                    st.code(msg["sql"], language="sql")
-            if msg.get("data"):
-                st.dataframe(pd.DataFrame(msg["data"]), use_container_width=True, hide_index=True)
+            if msg.get("tools_used"):
+                with st.expander(f"🔧 Tools called: {', '.join(msg['tools_used'])}"):
+                    if msg.get("data"):
+                        st.dataframe(pd.DataFrame(msg["data"]), use_container_width=True, hide_index=True)
 
-    # Example prompts shown only on first load
+    # Example prompts on first load
     if not st.session_state.chat_history:
         st.markdown("**Try asking:**")
         examples = [
@@ -575,69 +721,89 @@ elif page == "🤖 AI Assistant":
         user_input = st.session_state.pop("prefill")
 
     if user_input:
-        # Append user message and rerun to show it immediately
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         st.session_state["_processing"] = True
         st.rerun()
 
-    # Process the last user message if flagged
     if st.session_state.get("_processing"):
         st.session_state["_processing"] = False
         user_q = st.session_state.chat_history[-1]["content"]
 
-        with st.spinner("Thinking..."):
+        with st.spinner("Agent thinking..."):
             try:
                 client = Groq(api_key=GROQ_API_KEY)
 
-                # Step 1: Generate SQL
-                sql_prompt = f"{SCHEMA}\n\nQuestion: {user_q}\n\nSQL:"
-                sql_resp = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": sql_prompt}],
-                    temperature=0
+                SYSTEM = (
+                    "You are CoachSphere's AI analytics agent for a sales coaching platform. "
+                    "You have tools to query real coaching data (Jan–Jun 2024). "
+                    "ALWAYS call a tool to look up data before answering — never guess numbers. "
+                    "Teams: Enterprise, SMB, EMEA, APAC. After getting data, give a concise answer with specific numbers."
                 )
-                raw_sql = sql_resp.choices[0].message.content.strip()
-                if raw_sql.startswith("```"):
-                    raw_sql = raw_sql.split("```")[1]
-                    if raw_sql.lower().startswith("sql"):
-                        raw_sql = raw_sql[3:]
-                generated_sql = raw_sql.strip()
 
-                # Step 2: Run SQL
-                try:
-                    result_df = query(generated_sql)
-                    sql_error = None
-                except Exception as e:
-                    result_df = pd.DataFrame()
-                    sql_error = str(e)
+                messages = [
+                    {"role": "system", "content": SYSTEM},
+                    {"role": "user",   "content": user_q}
+                ]
 
-                # Step 3: Natural language answer
-                if sql_error:
-                    answer_prompt = f"The user asked: '{user_q}'\nSQL failed: {sql_error}\nExplain briefly and suggest how to rephrase."
-                elif result_df.empty:
-                    answer_prompt = f"The user asked: '{user_q}'\nThe query returned no results. Give a helpful response."
+                tools_used = []
+                last_data  = None
+
+                # ── Agentic loop (max 5 iterations) ──────────────────────
+                for _ in range(5):
+                    response = client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=messages,
+                        tools=TOOLS,
+                        tool_choice="auto",
+                        temperature=0
+                    )
+                    resp_msg = response.choices[0].message
+
+                    if resp_msg.tool_calls:
+                        # Add assistant turn with tool_calls
+                        messages.append({
+                            "role": "assistant",
+                            "content": resp_msg.content or "",
+                            "tool_calls": [
+                                {
+                                    "id": tc.id,
+                                    "type": "function",
+                                    "function": {
+                                        "name": tc.function.name,
+                                        "arguments": tc.function.arguments
+                                    }
+                                } for tc in resp_msg.tool_calls
+                            ]
+                        })
+                        # Execute each tool and feed results back
+                        for tc in resp_msg.tool_calls:
+                            fn_name = tc.function.name
+                            fn_args = json.loads(tc.function.arguments)
+                            result  = run_tool(fn_name, fn_args)
+                            tools_used.append(fn_name)
+                            last_data = result
+                            messages.append({
+                                "role":         "tool",
+                                "tool_call_id": tc.id,
+                                "content":      json.dumps(result)
+                            })
+                    else:
+                        # No more tool calls — final answer reached
+                        final_answer = resp_msg.content or "No answer generated."
+                        break
                 else:
-                    data_preview = result_df.head(10).to_string(index=False)
-                    answer_prompt = f"The user asked: '{user_q}'\nData:\n{data_preview}\nGive a concise 2-3 sentence answer with specific numbers."
+                    final_answer = "Agent reached maximum iterations without a final answer."
 
-                ans_resp = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": answer_prompt}],
-                    temperature=0.3
-                )
-                answer_text = ans_resp.choices[0].message.content.strip()
-
-                # Store data as records (not DataFrame) to avoid session_state issues
                 st.session_state.chat_history.append({
-                    "role": "assistant",
-                    "content": answer_text,
-                    "sql": generated_sql if not sql_error else None,
-                    "data": result_df.to_dict("records") if not result_df.empty else None
+                    "role":       "assistant",
+                    "content":    final_answer,
+                    "tools_used": tools_used,
+                    "data":       last_data
                 })
 
             except Exception as e:
                 st.session_state.chat_history.append({
-                    "role": "assistant",
+                    "role":    "assistant",
                     "content": f"Error: {str(e)}"
                 })
 
