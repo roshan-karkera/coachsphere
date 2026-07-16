@@ -254,7 +254,7 @@ if page == "📊 Overview":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "👥 Team Analytics":
-    st.markdown("# Team Analytics")
+    st.markdown("# 👥 Team Analytics")
     team_sum = query(f"""
         SELECT ts.team, ts.period_month, ts.avg_engagement, ts.avg_effectiveness,
                ts.active_reps
@@ -313,7 +313,7 @@ elif page == "👥 Team Analytics":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🧠 Skill Progression":
-    st.markdown("# Skill Progression")
+    st.markdown("# 🧠 Skill Progression")
     skills = ['communication','product_knowledge','objection_handling','closing_technique','active_listening']
 
     avg_skills = query(f"""
@@ -372,7 +372,7 @@ elif page == "🧠 Skill Progression":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📅 Session Insights":
-    st.markdown("# Session Insights")
+    st.markdown("# 📅 Session Insights")
 
     sessions = query(f"""
         SELECT cs.scenario, cs.status,
@@ -417,7 +417,7 @@ elif page == "📅 Session Insights":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🔍 Rep Deep Dive":
-    st.markdown("# Representative Deep Dive")
+    st.markdown("# 🔍 Rep Deep Dive")
     reps = query(f"SELECT user_id, name, team FROM users WHERE role!='Team Lead' AND team IN ('{team_filter}') ORDER BY name")
     sel_rep = st.selectbox("Select Sales Rep", reps['name'].tolist())
     uid = int(reps[reps['name']==sel_rep]['user_id'].iloc[0])
@@ -477,7 +477,7 @@ elif page == "🔍 Rep Deep Dive":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📋 Metric Definitions":
-    st.markdown("# Metric Definitions")
+    st.markdown("# 📋 Metric Definitions")
     st.markdown("Version-controlled definitions for all CoachSphere KPIs. Updated via Git — every change is tracked.")
     defs = query("SELECT * FROM metric_definitions")
     for _, row in defs.iterrows():
@@ -490,34 +490,50 @@ elif page == "📋 Metric Definitions":
             st.caption(f"Created: {row['created_at'][:10]}")
 
 elif page == "🤖 AI Assistant":
-    st.markdown("# AI Assistant")
+    st.markdown("# 🤖 AI Assistant")
     st.markdown("Ask any question about your coaching data in plain English. Powered by **Groq · Llama 3.3 70B**.")
 
     SCHEMA = """
-    You have access to a SQLite database for CoachSphere, an AI sales coaching analytics platform.
+    You are a SQL expert querying a SQLite database for CoachSphere, an AI sales coaching analytics platform.
+    Data covers Jan 2024 to Jun 2024. period_month format is 'YYYY-MM' (e.g. '2024-01' to '2024-06').
+    Teams are: Enterprise, SMB, EMEA, APAC.
 
-    RAW TABLES:
-    - users(user_id, name, email, role, team, region, hire_date, manager_id)
-      Teams: Enterprise, SMB, EMEA, APAC | Roles: Sales Rep, Senior Sales Rep, Account Executive, Team Lead
-    - coaching_sessions(session_id, user_id, session_type, scenario, scheduled_at, started_at, completed_at, duration_minutes, status)
-      status values: 'completed', 'started', 'missed' | scheduled_at format: 'YYYY-MM-DDTHH:MM:SS'
-    - skill_assessments(assessment_id, session_id, user_id, assessed_at, communication, product_knowledge, objection_handling, closing_technique, active_listening, overall_score)
-      All skill scores are 1.0–5.0
-    - session_feedback(feedback_id, session_id, user_id, given_at, engagement_score, clarity_score, confidence_score, overall_score)
-      All feedback scores are 1.0–5.0
-    - business_metrics(metric_id, user_id, period_month, deals_closed, pipeline_value, win_rate, avg_deal_size, quota_attainment, sessions_completed)
-      period_month format: 'YYYY-MM' (e.g. '2024-01' through '2024-06') | quota_attainment is 0.0–1.15
+    CRITICAL RULES:
+    1. ALWAYS use the views below for any metric, skill, business, or engagement questions. Never query raw tables for these.
+    2. business_metrics raw table has NO team column — always use v_business_impact view which has team.
+    3. Use EXACT column names as listed — do not guess or add prefixes like avg_.
+    4. Return ONLY a valid SQLite SELECT statement. No markdown, no explanation, no code fences.
 
-    ANALYTICS VIEWS (use these for metric queries — use EXACT column names below):
-    - v_session_engagement(user_id, name, team, period_month, sessions_scheduled, sessions_completed, avg_duration_min, feedback_submitted, engagement_score)
-    - v_skill_progression(user_id, name, team, period_month, communication, product_knowledge, objection_handling, closing_technique, active_listening, avg_overall_score, assessments_count)
-    - v_communication_quality(user_id, name, team, period_month, avg_engagement, avg_clarity, avg_confidence, communication_quality_score, feedback_count)
-    - v_business_impact(user_id, name, team, period_month, deals_closed, win_rate, avg_deal_size, pipeline_value, quota_attainment, sessions_completed, business_impact_index)
-    - v_coaching_effectiveness(user_id, name, team, period_month, engagement_score, skill_score, communication_quality_score, business_impact_index, coaching_effectiveness_score)
-    - v_team_summary(team, period_month, active_reps, avg_engagement, avg_effectiveness)
+    VIEWS (preferred — use these always):
+    v_coaching_effectiveness: user_id, name, team, period_month, engagement_score, skill_score, communication_quality_score, business_impact_index, coaching_effectiveness_score
+    v_business_impact: user_id, name, team, period_month, deals_closed, win_rate, avg_deal_size, pipeline_value, quota_attainment, sessions_completed, business_impact_index
+    v_skill_progression: user_id, name, team, period_month, communication, product_knowledge, objection_handling, closing_technique, active_listening, avg_overall_score, assessments_count
+    v_session_engagement: user_id, name, team, period_month, sessions_scheduled, sessions_completed, avg_duration_min, feedback_submitted, engagement_score
+    v_communication_quality: user_id, name, team, period_month, avg_engagement, avg_clarity, avg_confidence, communication_quality_score, feedback_count
+    v_team_summary: team, period_month, active_reps, avg_engagement, avg_effectiveness
 
-    Data covers Jan 2024 – Jun 2024. Always use the views for metric questions, raw tables only for counts or joins.
-    Return only valid SQLite SELECT SQL. No markdown, no explanation, just the SQL query.
+    RAW TABLES (only for session-level or user-level queries):
+    users: user_id, name, email, role, team, region, hire_date, manager_id
+    coaching_sessions: session_id, user_id, scenario, scheduled_at, duration_minutes, status ('completed','started','missed')
+    skill_assessments: assessment_id, session_id, user_id, assessed_at, communication, product_knowledge, objection_handling, closing_technique, active_listening, overall_score
+    session_feedback: feedback_id, session_id, user_id, given_at, engagement_score, clarity_score, confidence_score, overall_score
+    business_metrics: metric_id, user_id, period_month, deals_closed, pipeline_value, win_rate, avg_deal_size, quota_attainment, sessions_completed (NO team column)
+
+    EXAMPLE QUERIES:
+    Q: Which team has the highest quota attainment?
+    A: SELECT team, ROUND(AVG(quota_attainment)*100,1) AS avg_quota_pct FROM v_business_impact GROUP BY team ORDER BY avg_quota_pct DESC LIMIT 1
+
+    Q: Top 5 reps by coaching effectiveness in June 2024?
+    A: SELECT name, team, coaching_effectiveness_score FROM v_coaching_effectiveness WHERE period_month='2024-06' ORDER BY coaching_effectiveness_score DESC LIMIT 5
+
+    Q: Reps whose objection handling improved most over 6 months?
+    A: SELECT name, team, MIN(objection_handling) AS start_score, MAX(objection_handling) AS end_score, ROUND(MAX(objection_handling)-MIN(objection_handling),2) AS improvement FROM v_skill_progression GROUP BY user_id, name, team ORDER BY improvement DESC LIMIT 10
+
+    Q: How many sessions were missed each month?
+    A: SELECT strftime('%Y-%m', scheduled_at) AS month, COUNT(*) AS missed FROM coaching_sessions WHERE status='missed' GROUP BY month ORDER BY month
+
+    Q: Which rep closed the most deals in May 2024?
+    A: SELECT name, team, deals_closed FROM v_business_impact WHERE period_month='2024-05' ORDER BY deals_closed DESC LIMIT 1
     """
 
     if not GROQ_API_KEY:
