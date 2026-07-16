@@ -504,13 +504,12 @@ elif page == "🤖 AI Assistant":
             "type": "function",
             "function": {
                 "name": "get_top_performers",
-                "description": "Get top N sales reps ranked by coaching effectiveness score for a given month.",
+                "description": "Get the top 5 sales reps ranked by coaching effectiveness score for a given month.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "month": {"type": "string", "description": "Period month YYYY-MM e.g. '2024-06'"},
-                        "team":  {"type": "string", "description": "Team filter: Enterprise, SMB, EMEA, APAC, or 'all'"},
-                        "limit": {"type": "integer", "description": "How many reps to return (default 5)"}
+                        "team":  {"type": "string", "description": "Team filter: Enterprise, SMB, EMEA, APAC, or 'all'"}
                     },
                     "required": ["month"]
                 }
@@ -564,15 +563,14 @@ elif page == "🤖 AI Assistant":
             "type": "function",
             "function": {
                 "name": "get_skill_improvement",
-                "description": "Find reps who improved the most in a specific skill (or overall) across the 6-month period.",
+                "description": "Find the top 10 reps who improved the most in a specific skill (or overall) across the 6-month period.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "skill": {
                             "type": "string",
                             "description": "Skill to rank by: communication, product_knowledge, objection_handling, closing_technique, active_listening, or 'overall'"
-                        },
-                        "limit": {"type": "integer", "description": "Number of top improvers to return (default 10)"}
+                        }
                     },
                     "required": []
                 }
@@ -600,12 +598,10 @@ elif page == "🤖 AI Assistant":
         try:
             month = args.get("month", "all")
             team  = args.get("team",  "all")
-            limit = args.get("limit", 10)
             mf = f"AND period_month = '{month}'" if month and month != "all" else ""
             tf = f"AND team = '{team}'"          if team  and team  != "all" else ""
 
             if name == "get_top_performers":
-                lim = args.get("limit", 5)
                 df = pd.read_sql_query(f"""
                     SELECT name, team, period_month,
                            ROUND(coaching_effectiveness_score,3) AS effectiveness,
@@ -613,7 +609,7 @@ elif page == "🤖 AI Assistant":
                            ROUND(skill_score,3)                  AS skill_score
                     FROM v_coaching_effectiveness
                     WHERE 1=1 {mf} {tf}
-                    ORDER BY coaching_effectiveness_score DESC LIMIT {lim}
+                    ORDER BY coaching_effectiveness_score DESC LIMIT 5
                 """, conn)
 
             elif name == "get_team_summary":
@@ -648,7 +644,6 @@ elif page == "🤖 AI Assistant":
 
             elif name == "get_skill_improvement":
                 skill = args.get("skill", "overall")
-                lim   = args.get("limit", 10)
                 col   = "avg_overall_score" if skill in ("overall","") or skill not in [
                     "communication","product_knowledge","objection_handling",
                     "closing_technique","active_listening"
@@ -660,7 +655,7 @@ elif page == "🤖 AI Assistant":
                            ROUND(MAX({col})-MIN({col}),2) AS improvement
                     FROM v_skill_progression
                     GROUP BY user_id, name, team
-                    ORDER BY improvement DESC LIMIT {lim}
+                    ORDER BY improvement DESC LIMIT 10
                 """, conn)
 
             elif name == "get_rep_profile":
