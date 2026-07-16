@@ -66,6 +66,11 @@ st.markdown("""
 .metric-lbl { font-size: 0.78rem; color: #000000; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
 .metric-delta { font-size: 0.85rem; margin-top: 6px; }
 .section-title { font-size: 1.1rem; font-weight: 600; color: #000000; margin: 18px 0 10px; }
+footer { visibility: hidden; }
+#MainMenu { visibility: hidden; }
+[data-testid="stToolbar"] { display: none !important; }
+div[class*="viewerBadge"] { display: none !important; }
+.stDeployButton { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
