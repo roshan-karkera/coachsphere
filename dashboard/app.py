@@ -627,4 +627,3 @@ elif page == "🤖 AI Assistant":
 
         st.rerun()
 
-        
