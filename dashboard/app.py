@@ -125,7 +125,7 @@ team_filter = "','".join(sel_teams) if sel_teams else "''"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 if page == "📊 Overview":
-    st.markdown("# 📊 CoachSphere Overview")
+    st.markdown("# Platform Overview")
     st.markdown(f"**Platform metrics · {sel_month}** — all coaching activity across {len(sel_teams)} teams")
 
     # KPI cards
@@ -254,7 +254,7 @@ if page == "📊 Overview":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "👥 Team Analytics":
-    st.markdown("# 👥 Team Analytics")
+    st.markdown("# Team Analytics")
     team_sum = query(f"""
         SELECT ts.team, ts.period_month, ts.avg_engagement, ts.avg_effectiveness,
                ts.active_reps
@@ -313,7 +313,7 @@ elif page == "👥 Team Analytics":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🧠 Skill Progression":
-    st.markdown("# 🧠 Skill Progression")
+    st.markdown("# Skill Progression")
     skills = ['communication','product_knowledge','objection_handling','closing_technique','active_listening']
 
     avg_skills = query(f"""
@@ -372,7 +372,7 @@ elif page == "🧠 Skill Progression":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📅 Session Insights":
-    st.markdown("# 📅 Session Insights")
+    st.markdown("# Session Insights")
 
     sessions = query(f"""
         SELECT cs.scenario, cs.status,
@@ -417,7 +417,7 @@ elif page == "📅 Session Insights":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🔍 Rep Deep Dive":
-    st.markdown("# 🔍 Representative Deep Dive")
+    st.markdown("# Representative Deep Dive")
     reps = query(f"SELECT user_id, name, team FROM users WHERE role!='Team Lead' AND team IN ('{team_filter}') ORDER BY name")
     sel_rep = st.selectbox("Select Sales Rep", reps['name'].tolist())
     uid = int(reps[reps['name']==sel_rep]['user_id'].iloc[0])
@@ -477,7 +477,7 @@ elif page == "🔍 Rep Deep Dive":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📋 Metric Definitions":
-    st.markdown("# 📋 Metric Definitions")
+    st.markdown("# Metric Definitions")
     st.markdown("Version-controlled definitions for all CoachSphere KPIs. Updated via Git — every change is tracked.")
     defs = query("SELECT * FROM metric_definitions")
     for _, row in defs.iterrows():
@@ -490,7 +490,7 @@ elif page == "📋 Metric Definitions":
             st.caption(f"Created: {row['created_at'][:10]}")
 
 elif page == "🤖 AI Assistant":
-    st.markdown("# 🤖 AI Assistant")
+    st.markdown("# AI Assistant")
     st.markdown("Ask any question about your coaching data in plain English. Powered by **Groq · Llama 3.3 70B**.")
 
     SCHEMA = """
@@ -627,3 +627,4 @@ elif page == "🤖 AI Assistant":
 
         st.rerun()
 
+        
