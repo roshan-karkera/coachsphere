@@ -508,13 +508,13 @@ elif page == "🤖 AI Assistant":
     - business_metrics(metric_id, user_id, period_month, deals_closed, pipeline_value, win_rate, avg_deal_size, quota_attainment, sessions_completed)
       period_month format: 'YYYY-MM' (e.g. '2024-01' through '2024-06') | quota_attainment is 0.0–1.15
 
-    ANALYTICS VIEWS (use these for metric queries):
-    - v_session_engagement(user_id, name, team, period_month, total_sessions, completions, completion_rate, avg_duration, feedback_count, feedback_rate, engagement_score)
-    - v_skill_progression(user_id, name, team, period_month, avg_communication, avg_product_knowledge, avg_objection_handling, avg_closing_technique, avg_active_listening, avg_overall_score, prev_score, skill_delta_pct)
-    - v_communication_quality(user_id, name, team, period_month, avg_engagement, avg_clarity, avg_confidence, communication_quality_score)
-    - v_business_impact(user_id, name, team, period_month, deals_closed, pipeline_value, win_rate, avg_deal_size, quota_attainment, sessions_completed, business_impact_index)
+    ANALYTICS VIEWS (use these for metric queries — use EXACT column names below):
+    - v_session_engagement(user_id, name, team, period_month, sessions_scheduled, sessions_completed, avg_duration_min, feedback_submitted, engagement_score)
+    - v_skill_progression(user_id, name, team, period_month, communication, product_knowledge, objection_handling, closing_technique, active_listening, avg_overall_score, assessments_count)
+    - v_communication_quality(user_id, name, team, period_month, avg_engagement, avg_clarity, avg_confidence, communication_quality_score, feedback_count)
+    - v_business_impact(user_id, name, team, period_month, deals_closed, win_rate, avg_deal_size, pipeline_value, quota_attainment, sessions_completed, business_impact_index)
     - v_coaching_effectiveness(user_id, name, team, period_month, engagement_score, skill_score, communication_quality_score, business_impact_index, coaching_effectiveness_score)
-    - v_team_summary(team, period_month, avg_effectiveness, avg_engagement, avg_skill, total_sessions, completion_rate, avg_quota)
+    - v_team_summary(team, period_month, active_reps, avg_engagement, avg_effectiveness)
 
     Data covers Jan 2024 – Jun 2024. Always use the views for metric questions, raw tables only for counts or joins.
     Return only valid SQLite SELECT SQL. No markdown, no explanation, just the SQL query.
