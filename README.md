@@ -149,5 +149,5 @@ All KPIs are version-controlled in `metric_definitions` table and viewable insid
 
 ## Author
 
-**Roshan Karkera** — M.Sc. Integrated Information Systems, FAU Erlangen-Nürnberg  
+**Roshan Karkera** — M.Sc. International Information Systems, FAU Erlangen-Nürnberg  
 [roshan-karkera.github.io](https://roshan-karkera.github.io) · [LinkedIn](https://linkedin.com/in/roshan-karkera)
