@@ -589,12 +589,96 @@ elif page == "🤖 AI Assistant":
                     "required": ["rep_name"]
                 }
             }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_top_by_metric",
+                "description": (
+                    "Rank the top sales reps by any specific metric for a given month. "
+                    "Use this tool when the user asks 'who closed the most deals', 'who has the highest win rate', "
+                    "'who hit quota', 'who had the best quota attainment', or any question about ranking reps by a business or performance metric. "
+                    "Metric options: 'deals_closed', 'quota_pct', 'win_rate_pct', 'effectiveness', 'engagement', 'skill_score'."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "metric": {
+                            "type": "string",
+                            "description": "Metric to rank by: 'deals_closed', 'quota_pct', 'win_rate_pct', 'effectiveness', 'engagement', 'skill_score'"
+                        },
+                        "month": {"type": "string", "description": "Period month YYYY-MM e.g. '2024-05', or 'all' for all months"},
+                        "team":  {"type": "string", "description": "Team filter: Enterprise, SMB, EMEA, APAC, or 'all'"},
+                        "limit": {"type": "integer", "description": "Number of results to return (default 5)"}
+                    },
+                    "required": ["metric"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "compare_skill_progression",
+                "description": (
+                    "Compare skill score trends across teams or for a specific skill over time. "
+                    "Use when asked to compare teams, or how a skill changed month-over-month. "
+                    "Skill options: communication, product_knowledge, objection_handling, "
+                    "closing_technique, active_listening, or 'overall'."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "teams": {"type": "string", "description": "Comma-separated team names e.g. 'EMEA,Enterprise', or 'all'"},
+                        "skill": {"type": "string", "description": "Skill to compare: communication, product_knowledge, objection_handling, closing_technique, active_listening, or 'overall'"}
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "identify_underperforming_segments",
+                "description": (
+                    "Find teams performing below a coaching effectiveness threshold. "
+                    "Use when asked which teams are struggling, underperforming, at risk, or below average. "
+                    "Returns teams with avg_effectiveness below the threshold (default 0.5)."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "month":     {"type": "string", "description": "Period month YYYY-MM, or 'all' for all months"},
+                        "threshold": {"type": "number", "description": "Effectiveness threshold 0–1. Default 0.5."}
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "explain_metric_definition",
+                "description": (
+                    "Look up how a KPI or metric is defined and calculated. "
+                    "Use when asked 'how is X calculated', 'what does X mean', or 'explain metric X'. "
+                    "Returns the formula, version, description, and unit."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "metric_name": {"type": "string", "description": "Metric name or keyword e.g. 'engagement', 'effectiveness', 'business_impact'"}
+                    },
+                    "required": ["metric_name"]
+                }
+            }
         }
     ]
 
     # ── Tool execution ────────────────────────────────────────────────────
-    def run_tool(name, args):
+    def run_tool(name, args, _trace=None):
         conn = sqlite3.connect(DB)
+        sql  = ""
+        df   = pd.DataFrame()
         try:
             month = args.get("month", "all")
             team  = args.get("team",  "all")
@@ -602,45 +686,45 @@ elif page == "🤖 AI Assistant":
             tf = f"AND team = '{team}'"          if team  and team  != "all" else ""
 
             if name == "get_top_performers":
-                df = pd.read_sql_query(f"""
+                sql = f"""
                     SELECT name, team, period_month,
                            ROUND(coaching_effectiveness_score,3) AS effectiveness,
                            ROUND(engagement_score,3)             AS engagement,
                            ROUND(skill_score,3)                  AS skill_score
                     FROM v_coaching_effectiveness
                     WHERE 1=1 {mf} {tf}
-                    ORDER BY coaching_effectiveness_score DESC LIMIT 5
-                """, conn)
+                    ORDER BY coaching_effectiveness_score DESC LIMIT 5"""
+                df = pd.read_sql_query(sql, conn)
 
             elif name == "get_team_summary":
-                df = pd.read_sql_query(f"""
+                sql = f"""
                     SELECT team, period_month, active_reps,
                            ROUND(avg_engagement,3)    AS avg_engagement,
                            ROUND(avg_effectiveness,3) AS avg_effectiveness
                     FROM v_team_summary WHERE 1=1 {mf}
-                    ORDER BY period_month, avg_effectiveness DESC
-                """, conn)
+                    ORDER BY period_month, avg_effectiveness DESC"""
+                df = pd.read_sql_query(sql, conn)
 
             elif name == "get_quota_attainment":
-                df = pd.read_sql_query(f"""
+                sql = f"""
                     SELECT team, period_month,
                            ROUND(AVG(quota_attainment)*100,1) AS avg_quota_pct,
                            ROUND(AVG(win_rate)*100,1)         AS avg_win_rate_pct,
                            SUM(deals_closed)                  AS total_deals
                     FROM v_business_impact WHERE 1=1 {mf} {tf}
                     GROUP BY team, period_month
-                    ORDER BY period_month, avg_quota_pct DESC
-                """, conn)
+                    ORDER BY period_month, avg_quota_pct DESC"""
+                df = pd.read_sql_query(sql, conn)
 
             elif name == "get_session_stats":
-                df = pd.read_sql_query(f"""
+                sql = f"""
                     SELECT team, period_month,
                            SUM(sessions_scheduled) AS scheduled,
                            SUM(sessions_completed) AS completed,
                            ROUND(CAST(SUM(sessions_completed) AS REAL)/SUM(sessions_scheduled)*100,1) AS completion_pct
                     FROM v_session_engagement WHERE 1=1 {mf} {tf}
-                    GROUP BY team, period_month ORDER BY period_month
-                """, conn)
+                    GROUP BY team, period_month ORDER BY period_month"""
+                df = pd.read_sql_query(sql, conn)
 
             elif name == "get_skill_improvement":
                 skill = args.get("skill", "overall")
@@ -648,19 +732,19 @@ elif page == "🤖 AI Assistant":
                     "communication","product_knowledge","objection_handling",
                     "closing_technique","active_listening"
                 ] else skill
-                df = pd.read_sql_query(f"""
+                sql = f"""
                     SELECT name, team,
                            ROUND(MIN({col}),2)            AS start_score,
                            ROUND(MAX({col}),2)            AS end_score,
                            ROUND(MAX({col})-MIN({col}),2) AS improvement
                     FROM v_skill_progression
                     GROUP BY user_id, name, team
-                    ORDER BY improvement DESC LIMIT 10
-                """, conn)
+                    ORDER BY improvement DESC LIMIT 10"""
+                df = pd.read_sql_query(sql, conn)
 
             elif name == "get_rep_profile":
                 rep = args.get("rep_name","")
-                df = pd.read_sql_query(f"""
+                sql = f"""
                     SELECT ce.name, ce.team, ce.period_month,
                            ROUND(ce.coaching_effectiveness_score,3) AS effectiveness,
                            ROUND(ce.engagement_score,3)             AS engagement,
@@ -672,10 +756,88 @@ elif page == "🤖 AI Assistant":
                     LEFT JOIN v_business_impact bi
                         ON ce.user_id=bi.user_id AND ce.period_month=bi.period_month
                     WHERE ce.name LIKE '%{rep}%'
-                    ORDER BY ce.period_month
-                """, conn)
+                    ORDER BY ce.period_month"""
+                df = pd.read_sql_query(sql, conn)
+
+            elif name == "get_top_by_metric":
+                metric = args.get("metric", "deals_closed")
+                limit  = int(args.get("limit", 5))
+                metric_map = {
+                    "deals_closed":  "bi.deals_closed",
+                    "quota_pct":     "ROUND(bi.quota_attainment*100,1)",
+                    "win_rate_pct":  "ROUND(bi.win_rate*100,1)",
+                    "effectiveness": "ROUND(ce.coaching_effectiveness_score,3)",
+                    "engagement":    "ROUND(ce.engagement_score,3)",
+                    "skill_score":   "ROUND(ce.skill_score,3)",
+                }
+                col = metric_map.get(metric, "bi.deals_closed")
+                sql = f"""
+                    SELECT ce.name, ce.team, ce.period_month,
+                           {col} AS {metric},
+                           bi.deals_closed, bi.quota_attainment,
+                           ROUND(bi.quota_attainment*100,1) AS quota_pct,
+                           ROUND(bi.win_rate*100,1)         AS win_rate_pct,
+                           ROUND(ce.coaching_effectiveness_score,3) AS effectiveness
+                    FROM v_coaching_effectiveness ce
+                    LEFT JOIN v_business_impact bi
+                        ON ce.user_id=bi.user_id AND ce.period_month=bi.period_month
+                    WHERE {col} IS NOT NULL {mf} {tf}
+                    ORDER BY {col} DESC
+                    LIMIT {limit}"""
+                df = pd.read_sql_query(sql, conn)
+                df = df.loc[:, ~df.columns.duplicated()]
+                df = df.drop(columns=["quota_attainment"], errors="ignore")
+
+            elif name == "compare_skill_progression":
+                teams = args.get("teams", "all")
+                skill = args.get("skill", "overall")
+                col   = "avg_overall_score" if skill in ("overall", "", None) or skill not in [
+                    "communication","product_knowledge","objection_handling",
+                    "closing_technique","active_listening"
+                ] else skill
+                team_filter = ""
+                if teams and teams != "all":
+                    team_list = "', '".join([t.strip() for t in teams.split(",")])
+                    team_filter = f"AND team IN ('{team_list}')"
+                sql = f"""
+                    SELECT period_month, team,
+                           ROUND(AVG({col}), 2) AS avg_score
+                    FROM v_skill_progression
+                    WHERE 1=1 {team_filter}
+                    GROUP BY period_month, team
+                    ORDER BY period_month, team"""
+                df = pd.read_sql_query(sql, conn)
+
+            elif name == "identify_underperforming_segments":
+                threshold = float(args.get("threshold", 0.5))
+                sql = f"""
+                    SELECT team, period_month,
+                           ROUND(AVG(coaching_effectiveness_score), 3) AS avg_effectiveness,
+                           ROUND(AVG(engagement_score), 3)             AS avg_engagement,
+                           COUNT(DISTINCT user_id)                     AS rep_count
+                    FROM v_coaching_effectiveness
+                    WHERE 1=1 {mf}
+                    GROUP BY team, period_month
+                    HAVING avg_effectiveness < {threshold}
+                    ORDER BY avg_effectiveness ASC"""
+                df = pd.read_sql_query(sql, conn)
+
+            elif name == "explain_metric_definition":
+                metric_kw = args.get("metric_name", "")
+                sql = f"""
+                    SELECT metric_name, display_name, description, formula, unit, version
+                    FROM metric_definitions
+                    WHERE metric_name LIKE '%{metric_kw}%'
+                       OR display_name LIKE '%{metric_kw}%'
+                    LIMIT 3"""
+                df = pd.read_sql_query(sql, conn)
+
             else:
                 df = pd.DataFrame({"error": [f"Unknown tool: {name}"]})
+
+            if _trace is not None:
+                _trace["sql"]              = sql.strip()
+                _trace["records_returned"] = len(df)
 
             return df.to_dict("records")
         except Exception as e:
@@ -691,8 +853,24 @@ elif page == "🤖 AI Assistant":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if msg.get("tools_used"):
-                with st.expander(f"🔧 Tools called: {', '.join(msg['tools_used'])}"):
+                label = f"🔍 Agent trace — {', '.join(msg['tools_used'])}"
+                with st.expander(label):
+                    if msg.get("question"):
+                        st.markdown(f"**Question interpreted as:** {msg['question']}")
+                        st.divider()
+                    for i, entry in enumerate(msg.get("trace", [])):
+                        st.markdown(f"**Tool selected:** `{entry.get('tool', '?')}`")
+                        filters = {k: v for k, v in entry.get("args", {}).items()
+                                   if v and v not in ("all", None)}
+                        if filters:
+                            st.markdown(f"**Filters applied:** `{filters}`")
+                        if entry.get("sql"):
+                            st.code(entry["sql"].strip(), language="sql")
+                        st.markdown(f"**Records returned:** {entry.get('records_returned', '?')}")
+                        if i < len(msg.get("trace", [])) - 1:
+                            st.divider()
                     if msg.get("data"):
+                        st.markdown("**Result data:**")
                         st.dataframe(pd.DataFrame(msg["data"]), use_container_width=True, hide_index=True)
 
     # Example prompts on first load
@@ -732,7 +910,20 @@ elif page == "🤖 AI Assistant":
                     "You are CoachSphere's AI analytics agent for a sales coaching platform. "
                     "You have tools to query real coaching data (Jan–Jun 2024). "
                     "ALWAYS call a tool to look up data before answering — never guess numbers. "
-                    "Teams: Enterprise, SMB, EMEA, APAC. After getting data, give a concise answer with specific numbers."
+                    "Teams: Enterprise, SMB, EMEA, APAC. After getting data, give a concise answer with specific numbers. "
+                    "IMPORTANT tool selection rules: "
+                    "- Use get_top_by_metric for ANY question about ranking reps by a specific metric: "
+                    "  'most deals', 'highest win rate', 'best quota attainment', 'most deals closed', etc. "
+                    "  Pass the metric name: deals_closed, quota_pct, win_rate_pct, effectiveness, engagement, skill_score. "
+                    "- Use get_top_performers only when asked for top reps by overall coaching effectiveness. "
+                    "- Use get_rep_profile only when you already know a rep's name and want their full history. "
+                    "- Use identify_underperforming_segments when asked about struggling, weak, or at-risk teams. "
+                    "- Use compare_skill_progression to compare skills across teams or over time. "
+                    "- Use explain_metric_definition when asked how a metric is defined or calculated. "
+                    "- Never say a rep was 'not found' if a tool returned data — report what you found. "
+                    "If data reveals a team or rep significantly below average (effectiveness < 0.5 or quota < 70%), "
+                    "end your response with a '💡 AI Suggestion (not a fact):' block containing one specific, "
+                    "actionable coaching recommendation based on the data pattern you observed."
                 )
 
                 messages = [
@@ -740,8 +931,9 @@ elif page == "🤖 AI Assistant":
                     {"role": "user",   "content": user_q}
                 ]
 
-                tools_used = []
-                last_data  = None
+                tools_used    = []
+                last_data     = None
+                trace_entries = []
 
                 # ── Agentic loop (max 5 iterations) ──────────────────────
                 for _ in range(5):
@@ -772,9 +964,11 @@ elif page == "🤖 AI Assistant":
                         })
                         # Execute each tool and feed results back
                         for tc in resp_msg.tool_calls:
-                            fn_name = tc.function.name
-                            fn_args = json.loads(tc.function.arguments)
-                            result  = run_tool(fn_name, fn_args)
+                            fn_name      = tc.function.name
+                            fn_args      = json.loads(tc.function.arguments)
+                            _trace_entry = {"tool": fn_name, "args": fn_args, "sql": "", "records_returned": 0}
+                            result       = run_tool(fn_name, fn_args, _trace=_trace_entry)
+                            trace_entries.append(_trace_entry)
                             tools_used.append(fn_name)
                             last_data = result
                             messages.append({
@@ -793,7 +987,9 @@ elif page == "🤖 AI Assistant":
                     "role":       "assistant",
                     "content":    final_answer,
                     "tools_used": tools_used,
-                    "data":       last_data
+                    "data":       last_data,
+                    "trace":      trace_entries,
+                    "question":   user_q,
                 })
 
             except Exception as e:
