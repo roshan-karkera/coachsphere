@@ -640,15 +640,15 @@ elif page == "🤖 AI Assistant":
             "function": {
                 "name": "identify_underperforming_segments",
                 "description": (
-                    "Find teams performing below a coaching effectiveness threshold. "
+                    "Find teams performing below the platform average coaching effectiveness score. "
                     "Use when asked which teams are struggling, underperforming, at risk, or below average. "
-                    "Returns teams with avg_effectiveness below the threshold (default 0.5)."
+                    "Always returns results — teams ranked worst-first compared against the platform average. "
+                    "Do NOT pass a threshold parameter — this tool has no threshold."
                 ),
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "month":     {"type": "string", "description": "Period month YYYY-MM, or 'all' for all months"},
-                        "threshold": {"type": "number", "description": "Effectiveness threshold 0–1. Default 0.65. Use 0.65 unless the user specifies otherwise."}
+                        "month": {"type": "string", "description": "Period month YYYY-MM, or 'all' for all months"}
                     },
                     "required": []
                 }
@@ -809,16 +809,20 @@ elif page == "🤖 AI Assistant":
                 df = pd.read_sql_query(sql, conn)
 
             elif name == "identify_underperforming_segments":
-                threshold = float(args.get("threshold", 0.65))
                 sql = f"""
+                    WITH platform AS (
+                        SELECT ROUND(AVG(coaching_effectiveness_score), 3) AS platform_avg
+                        FROM v_coaching_effectiveness
+                        WHERE 1=1 {mf}
+                    )
                     SELECT team, period_month,
                            ROUND(AVG(coaching_effectiveness_score), 3) AS avg_effectiveness,
                            ROUND(AVG(engagement_score), 3)             AS avg_engagement,
-                           COUNT(DISTINCT user_id)                     AS rep_count
+                           COUNT(DISTINCT user_id)                     AS rep_count,
+                           ROUND(AVG(coaching_effectiveness_score) - (SELECT platform_avg FROM platform), 3) AS vs_platform_avg
                     FROM v_coaching_effectiveness
                     WHERE 1=1 {mf}
                     GROUP BY team, period_month
-                    HAVING avg_effectiveness < {threshold}
                     ORDER BY avg_effectiveness ASC"""
                 df = pd.read_sql_query(sql, conn)
 
@@ -921,9 +925,9 @@ elif page == "🤖 AI Assistant":
                     "- Use compare_skill_progression to compare skills across teams or over time. "
                     "- Use explain_metric_definition when asked how a metric is defined or calculated. "
                     "- Never say a rep was 'not found' if a tool returned data — report what you found. "
-                    "If data reveals a team or rep significantly below average (effectiveness < 0.5 or quota < 70%), "
-                    "end your response with a '💡 AI Suggestion (not a fact):' block containing one specific, "
-                    "actionable coaching recommendation based on the data pattern you observed."
+                    "If data reveals a team or rep performing below the platform average or below quota < 70%, "
+                    "end your response with a BLANK LINE followed by '💡 AI Suggestion (not a fact):' on its own line, "
+                    "then one specific actionable coaching recommendation. Always put the suggestion on a separate paragraph."
                 )
 
                 messages = [
