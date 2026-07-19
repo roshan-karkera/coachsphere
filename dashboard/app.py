@@ -608,8 +608,7 @@ elif page == "🤖 AI Assistant":
                             "description": "Metric to rank by: 'deals_closed', 'quota_pct', 'win_rate_pct', 'effectiveness', 'engagement', 'skill_score'"
                         },
                         "month": {"type": "string", "description": "Period month YYYY-MM e.g. '2024-05', or 'all' for all months"},
-                        "team":  {"type": "string", "description": "Team filter: Enterprise, SMB, EMEA, APAC, or 'all'"},
-                        "limit": {"type": "integer", "description": "Number of results to return (default 5)"}
+                        "team":  {"type": "string", "description": "Team filter: Enterprise, SMB, EMEA, APAC, or 'all'"}
                     },
                     "required": ["metric"]
                 }
