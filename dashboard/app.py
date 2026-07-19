@@ -648,7 +648,7 @@ elif page == "🤖 AI Assistant":
                     "type": "object",
                     "properties": {
                         "month":     {"type": "string", "description": "Period month YYYY-MM, or 'all' for all months"},
-                        "threshold": {"type": "number", "description": "Effectiveness threshold 0–1. Default 0.5."}
+                        "threshold": {"type": "number", "description": "Effectiveness threshold 0–1. Default 0.65. Use 0.65 unless the user specifies otherwise."}
                     },
                     "required": []
                 }
@@ -809,7 +809,7 @@ elif page == "🤖 AI Assistant":
                 df = pd.read_sql_query(sql, conn)
 
             elif name == "identify_underperforming_segments":
-                threshold = float(args.get("threshold", 0.5))
+                threshold = float(args.get("threshold", 0.65))
                 sql = f"""
                     SELECT team, period_month,
                            ROUND(AVG(coaching_effectiveness_score), 3) AS avg_effectiveness,
