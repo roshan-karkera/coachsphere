@@ -9,7 +9,7 @@
 
 CoachSphere is a fictional B2B SaaS company that coaches enterprise sales teams using AI-driven role-play sessions, real-time feedback, and skill assessments. This repository contains the **internal analytics and metrics layer** — the data backbone that answers the questions the product and business teams keep asking.
 
-**Inspired by:** Retorio, Gong, Chorus — AI coaching platforms for enterprise sales.
+**Inspired by:** Retorio — AI coaching platforms for enterprise sales.
 
 ---
 
@@ -138,3 +138,7 @@ All KPIs are version-controlled in `metric_definitions` table and viewable insid
 
 **Roshan Karkera** — M.Sc. International Information Systems, FAU Erlangen-Nürnberg  
 [roshan-karkera.github.io](https://roshan-karkera.github.io) · [LinkedIn](https://linkedin.com/in/roshan-karkera)
+
+
+## Application url
+https://coachsphere-ekumda5ebehr6ypyd9qkmj.streamlit.app/
