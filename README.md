@@ -134,19 +134,6 @@ All KPIs are version-controlled in `metric_definitions` table and viewable insid
 
 ---
 
-## Roadmap
-
-- [x] Data simulation & SQLite schema  
-- [x] Metric views (version-controlled)  
-- [x] Streamlit dashboard (6 pages)  
-- [x] AI Assistant — natural language queries via Groq (Llama 3.3 70B)
-- [ ] FastAPI REST layer with OpenAPI docs  
-- [ ] AI agent (Google ADK) querying the metrics layer via MCP  
-- [ ] Before/after launch comparison view  
-- [ ] dbt integration for transformation models
-
----
-
 ## Author
 
 **Roshan Karkera** — M.Sc. International Information Systems, FAU Erlangen-Nürnberg  
