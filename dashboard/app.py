@@ -999,10 +999,90 @@ elif page == "🤖 AI Assistant":
                 })
 
             except Exception as e:
-                st.session_state.chat_history.append({
-                    "role":    "assistant",
-                    "content": f"Error: {str(e)}"
-                })
+                err_str = str(e)
+                if 'tool_use_failed' in err_str or 'failed_generation' in err_str:
+                    # Model generated a malformed tool call (usually due to typos/abbreviations).
+                    # Retry once with an explicit instruction to rephrase the query first.
+                    try:
+                        retry_messages = [
+                            {"role": "system", "content": SYSTEM},
+                            {
+                                "role": "user",
+                                "content": (
+                                    f"The user asked: '{user_q}'. "
+                                    "This may contain typos or abbreviations. "
+                                    "First interpret what they most likely meant "
+                                    "(e.g. 'mont of jan' = January 2024, 'top team' = best performing team), "
+                                    "then call the appropriate tool to answer it."
+                                )
+                            }
+                        ]
+                        retry_tools_used    = []
+                        retry_last_data     = None
+                        retry_trace_entries = []
+                        for _ in range(5):
+                            retry_resp = client.chat.completions.create(
+                                model="llama-3.3-70b-versatile",
+                                messages=retry_messages,
+                                tools=TOOLS,
+                                tool_choice="auto",
+                                temperature=0
+                            )
+                            retry_msg = retry_resp.choices[0].message
+                            if retry_msg.tool_calls:
+                                retry_messages.append({
+                                    "role": "assistant",
+                                    "content": retry_msg.content or "",
+                                    "tool_calls": [
+                                        {"id": tc.id, "type": "function",
+                                         "function": {"name": tc.function.name,
+                                                      "arguments": tc.function.arguments}}
+                                        for tc in retry_msg.tool_calls
+                                    ]
+                                })
+                                for tc in retry_msg.tool_calls:
+                                    fn_name      = tc.function.name
+                                    fn_args      = json.loads(tc.function.arguments)
+                                    _te          = {"tool": fn_name, "args": fn_args, "sql": "", "records_returned": 0}
+                                    result       = run_tool(fn_name, fn_args, _trace=_te)
+                                    retry_trace_entries.append(_te)
+                                    retry_tools_used.append(fn_name)
+                                    retry_last_data = result
+                                    retry_messages.append({
+                                        "role": "tool", "tool_call_id": tc.id,
+                                        "content": json.dumps(result)
+                                    })
+                            else:
+                                final_answer = retry_msg.content or "No answer generated."
+                                break
+                        else:
+                            final_answer = "I understood your question but couldn't retrieve the data. Please try rephrasing."
+                        st.session_state.chat_history.append({
+                            "role":       "assistant",
+                            "content":    final_answer,
+                            "tools_used": retry_tools_used,
+                            "data":       retry_last_data,
+                            "trace":      retry_trace_entries,
+                            "question":   user_q,
+                        })
+                    except Exception:
+                        st.session_state.chat_history.append({
+                            "role":    "assistant",
+                            "content": "I couldn't interpret that query. Try: *'Which team performed best in January 2024?'*",
+                            "tools_used": [], "data": None, "trace": [], "question": user_q,
+                        })
+                elif 'invalid_api_key' in err_str or '401' in err_str:
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": "Invalid API key. Please check your Groq API key in Streamlit secrets.",
+                        "tools_used": [], "data": None, "trace": [], "question": user_q,
+                    })
+                else:
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": f"Something went wrong: {err_str}",
+                        "tools_used": [], "data": None, "trace": [], "question": user_q,
+                    })
 
         st.rerun()
 
