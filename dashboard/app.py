@@ -761,6 +761,9 @@ elif page == "🤖 AI Assistant":
             elif name == "get_top_by_metric":
                 metric = args.get("metric", "deals_closed")
                 limit  = int(args.get("limit", 5))
+                # Qualify period_month and team with ce. alias to avoid ambiguity in JOIN
+                mf2 = f"AND ce.period_month = '{month}'" if month and month != "all" else ""
+                tf2 = f"AND ce.team = '{team}'"          if team  and team  != "all" else ""
                 metric_map = {
                     "deals_closed":  "bi.deals_closed",
                     "quota_pct":     "ROUND(bi.quota_attainment*100,1)",
@@ -780,7 +783,7 @@ elif page == "🤖 AI Assistant":
                     FROM v_coaching_effectiveness ce
                     LEFT JOIN v_business_impact bi
                         ON ce.user_id=bi.user_id AND ce.period_month=bi.period_month
-                    WHERE {col} IS NOT NULL {mf} {tf}
+                    WHERE {col} IS NOT NULL {mf2} {tf2}
                     ORDER BY {col} DESC
                     LIMIT {limit}"""
                 df = pd.read_sql_query(sql, conn)
