@@ -57,20 +57,162 @@ st.set_page_config(
 # ── Dark theme overrides ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
-[data-testid="stSidebar"] { background-color: #0f172a; }
+/* ── Full dark theme ─────────────────────────────────────── */
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="block-container"] { background: #070d1a !important; }
+[data-testid="stSidebar"] { background-color: #0a1628 !important; border-right: 1px solid rgba(56,189,248,0.08); }
 [data-testid="stSidebar"] * { color: #e2e8f0 !important; }
-.metric-card {
-    background: #ffffff; border-radius: 12px; padding: 18px 22px;
-    border: 1px solid #cbd5e1; text-align: center;
+h1,h2,h3,h4,p,span,label { color: #e2e8f0; }
+.stMarkdown p { color: #cbd5e1; }
+
+/* ── Hide Streamlit chrome (top & bottom bars) ───────────── */
+header[data-testid="stHeader"] { display: none !important; }
+[data-testid="stToolbar"] { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+[data-testid="stBottom"],
+[data-testid="stBottom"] > div,
+[data-testid="stBottom"] > div > div,
+[data-testid="stBottom"] > div > div > div,
+.stChatFloatingInputContainer,
+[data-testid="stChatInputContainer"],
+div[class*="stBottom"] {
+    background: #070d1a !important;
+    border-top: none !important;
+    box-shadow: none !important;
 }
-.metric-val { font-size: 2rem; font-weight: 700; color: #000000; }
-.metric-lbl { font-size: 0.78rem; color: #000000; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-.metric-delta { font-size: 0.85rem; margin-top: 6px; }
-.section-title { font-size: 1.1rem; font-weight: 600; color: #000000; margin: 18px 0 10px; }
-footer { visibility: hidden; }
-#MainMenu { visibility: hidden; }
-div[class*="viewerBadge"] { display: none !important; }
-.stDeployButton { display: none !important; }
+/* Nuke any remaining white at the very bottom */
+.main > div:last-child { background: #070d1a !important; }
+
+/* ── Metric cards ────────────────────────────────────────── */
+.metric-card {
+    background: linear-gradient(135deg, #0f1f35 0%, #0a1628 100%);
+    border-radius: 16px; padding: 22px 24px;
+    border: 1px solid rgba(56,189,248,0.15); text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.metric-card:hover { transform: translateY(-3px); border-color: rgba(56,189,248,0.4); }
+.metric-val {
+    font-size: 2.2rem; font-weight: 800;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; letter-spacing: -0.02em;
+}
+.metric-lbl { font-size: 0.72rem; color: #475569; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+.metric-delta { font-size: 0.85rem; margin-top: 8px; font-weight: 600; }
+
+/* ── Section titles ──────────────────────────────────────── */
+.section-title { font-size: 0.8rem; font-weight: 700; color: #475569; margin: 20px 0 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── Page hero ───────────────────────────────────────────── */
+.page-hero {
+    background: linear-gradient(135deg, #0d2137 0%, #0a1628 60%, #070d1a 100%);
+    border-radius: 20px; padding: 28px 32px; margin-bottom: 24px;
+    border: 1px solid rgba(56,189,248,0.12); position: relative; overflow: hidden;
+}
+.page-hero::before {
+    content: ''; position: absolute; top: -40%; right: -5%; width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%); pointer-events: none;
+}
+.hero-title { font-size: 1.7rem; font-weight: 800; background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0 0 6px 0; }
+.hero-sub { color: #475569; margin: 0; font-size: 0.9rem; }
+
+/* ── MCP page ────────────────────────────────────────────── */
+.mcp-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25);
+    border-radius: 100px; padding: 6px 16px; font-size: 0.85rem; font-weight: 600; color: #34d399;
+}
+.pulse { width: 8px; height: 8px; background: #34d399; border-radius: 50%; display:inline-block; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.tool-card {
+    background: linear-gradient(135deg, #0f1f35 0%, #0a1628 100%);
+    border-radius: 12px; padding: 14px 18px; border: 1px solid rgba(56,189,248,0.1);
+    margin-bottom: 10px; transition: border-color 0.2s;
+}
+.tool-card:hover { border-color: rgba(56,189,248,0.3); }
+.tool-name { font-weight: 700; color: #38bdf8; font-size: 0.88rem; font-family: monospace; }
+.tool-desc { color: #475569; font-size: 0.8rem; margin-top: 4px; }
+.arch-box {
+    background: linear-gradient(135deg, #0f1f35 0%, #0a1628 100%);
+    border-radius: 14px; padding: 20px 24px; border: 1px solid rgba(56,189,248,0.12); text-align: center;
+}
+.arch-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; margin-bottom: 6px; }
+.arch-name { font-size: 1rem; font-weight: 700; color: #e2e8f0; }
+.arch-sub { font-size: 0.75rem; color: #38bdf8; margin-top: 3px; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.stButton > button {
+    background: linear-gradient(135deg, #0f1f35 0%, #0a1628 100%) !important;
+    border: 1px solid rgba(56,189,248,0.15) !important;
+    color: #64748b !important;
+    border-radius: 12px !important;
+    font-size: 0.82rem !important;
+    transition: all 0.2s ease !important;
+    width: 100% !important;
+}
+.stButton > button:hover {
+    border-color: rgba(56,189,248,0.45) !important;
+    color: #e2e8f0 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(56,189,248,0.1) !important;
+}
+
+/* ── Chat input ──────────────────────────────────────────── */
+[data-testid="stChatInput"],
+[data-testid="stChatInput"] > div,
+[data-testid="stChatInput"] > div > div {
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3) !important;
+}
+[data-testid="stChatInput"] textarea {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: none !important;
+    border-radius: 16px !important;
+}
+[data-testid="stChatInput"] textarea::placeholder { color: #94a3b8 !important; }
+.stSelectbox > div > div, .stMultiSelect > div > div {
+    background: #0f1f35 !important; border-color: rgba(56,189,248,0.15) !important; color: #e2e8f0 !important;
+}
+[data-testid="stExpander"] {
+    background: #0f1f35 !important; border: 1px solid rgba(56,189,248,0.1) !important; border-radius: 12px !important;
+}
+[data-testid="stExpander"] summary { color: #94a3b8 !important; }
+
+/* ── Code blocks ─────────────────────────────────────────── */
+[data-testid="stCodeBlock"],
+[data-testid="stCodeBlock"] pre,
+[data-testid="stCodeBlock"] code,
+.stCode, .stCode pre, .stCode code {
+    background: #060d1b !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(56,189,248,0.12) !important;
+    border-radius: 10px !important;
+}
+[data-testid="stCodeBlock"] span { opacity: 1 !important; }
+/* Expanders dark */
+[data-testid="stExpander"] {
+    background: #0a1628 !important;
+    border: 1px solid rgba(56,189,248,0.1) !important;
+    border-radius: 12px !important;
+}
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary span,
+[data-testid="stExpander"] p { color: #94a3b8 !important; }
+
+/* ── Dataframe ───────────────────────────────────────────── */
+[data-testid="stDataFrame"] iframe { border-radius: 12px; }
+
+/* ── Misc ────────────────────────────────────────────────── */
+hr { border-color: rgba(56,189,248,0.08) !important; }
+.stSelectbox label, .stMultiSelect label, .stRadio label { color: #94a3b8 !important; }
+[data-testid="stSidebarContent"] h2 { color: #38bdf8 !important; }
+footer,#MainMenu { visibility: hidden; }
+div[class*="viewerBadge"],.stDeployButton { display: none !important; }
 [data-testid="collapsedControl"] { display: flex !important; visibility: visible !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -115,6 +257,7 @@ with st.sidebar:
         "🔍 Rep Deep Dive",
         "📋 Metric Definitions",
         "🤖 AI Assistant",
+        "🔌 MCP Server",
     ])
     st.divider()
     teams_all = query("SELECT DISTINCT team FROM users WHERE role != 'Team Lead'")['team'].tolist()
@@ -126,8 +269,10 @@ team_filter = "','".join(sel_teams) if sel_teams else "''"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 if page == "📊 Overview":
-    st.markdown("# 📊 Platform Overview")
-    st.markdown(f"**Platform metrics · {sel_month}** — all coaching activity across {len(sel_teams)} teams")
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">📊 Platform Overview</div>
+        <div class="hero-sub">Platform metrics · {sel_month} &nbsp;·&nbsp; {len(sel_teams)} teams active</div>
+    </div>""", unsafe_allow_html=True)
 
     # KPI cards
     kpi = query(f"""
@@ -191,7 +336,7 @@ if page == "📊 Overview":
                       labels={'period_month':'Month','effectiveness':'Score','team':'Team'},
                       markers=True)
         fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                          font_color='#1e293b', legend_title_text='',
+                          font_color='#94a3b8', legend_title_text='',
                           xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -212,7 +357,7 @@ if page == "📊 Overview":
                       labels={'pct':'Completion %','team':'Team'})
         fig2.update_traces(texttemplate='%{text}%', textposition='outside')
         fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#1e293b', showlegend=False,
+                           font_color='#94a3b8', showlegend=False,
                            xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155', range=[0,105]))
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -229,7 +374,7 @@ if page == "📊 Overview":
                        color_discrete_map=TEAM_COLORS,
                        labels={'quota_pct':'Quota Attainment %','period_month':'Month'})
         fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
+                           font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig3, use_container_width=True)
 
@@ -249,13 +394,16 @@ if page == "📊 Overview":
                           trendline='ols',
                           labels={'total_sessions':'Total Sessions','avg_win_rate':'Avg Win Rate %'})
         fig4.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
+                           font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig4, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "👥 Team Analytics":
-    st.markdown("# 👥 Team Analytics")
+    st.markdown("""<div class="page-hero">
+        <div class="hero-title">👥 Team Analytics</div>
+        <div class="hero-sub">Effectiveness, engagement, and quota attainment across all teams</div>
+    </div>""", unsafe_allow_html=True)
     team_sum = query(f"""
         SELECT ts.team, ts.period_month, ts.avg_engagement, ts.avg_effectiveness,
                ts.active_reps
@@ -271,7 +419,7 @@ elif page == "👥 Team Analytics":
                      barmode='group', color_discrete_map=TEAM_COLORS,
                      labels={'avg_effectiveness':'Effectiveness Score','period_month':'Month'})
         fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                          font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
+                          font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
                           yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -284,7 +432,7 @@ elif page == "👥 Team Analytics":
             texttemplate='%{text}', showscale=True,
             colorbar=dict(title='Score')
         ))
-        fig2.update_layout(paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b',
+        fig2.update_layout(paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8',
                            xaxis_title='Month', yaxis_title='Team')
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -314,7 +462,10 @@ elif page == "👥 Team Analytics":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🧠 Skill Progression":
-    st.markdown("# 🧠 Skill Progression")
+    st.markdown("""<div class="page-hero">
+        <div class="hero-title">🧠 Skill Progression</div>
+        <div class="hero-sub">Track communication, objection handling, and closing technique over time</div>
+    </div>""", unsafe_allow_html=True)
     skills = ['communication','product_knowledge','objection_handling','closing_technique','active_listening']
 
     avg_skills = query(f"""
@@ -337,7 +488,7 @@ elif page == "🧠 Skill Progression":
         fig = px.line(melted, x='period_month', y='Score', color='Skill', markers=True,
                       color_discrete_sequence=COLORS)
         fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                          font_color='#1e293b', yaxis=dict(range=[1,5], gridcolor='#334155'),
+                          font_color='#94a3b8', yaxis=dict(range=[1,5], gridcolor='#334155'),
                           xaxis=dict(gridcolor='#334155'), legend_title_text='')
         st.plotly_chart(fig, use_container_width=True)
 
@@ -354,7 +505,7 @@ elif page == "🧠 Skill Progression":
             fig2.update_layout(polar=dict(bgcolor='#0f172a',
                                           radialaxis=dict(range=[0,5], gridcolor='#334155'),
                                           angularaxis=dict(gridcolor='#334155')),
-                                paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b', showlegend=False)
+                                paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8', showlegend=False)
             st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown('<div class="section-title">Month-over-Month Skill Improvement</div>', unsafe_allow_html=True)
@@ -373,7 +524,10 @@ elif page == "🧠 Skill Progression":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📅 Session Insights":
-    st.markdown("# 📅 Session Insights")
+    st.markdown("""<div class="page-hero">
+        <div class="hero-title">📅 Session Insights</div>
+        <div class="hero-sub">Completion rates, session duration, and scenario breakdown</div>
+    </div>""", unsafe_allow_html=True)
 
     sessions = query(f"""
         SELECT cs.scenario, cs.status,
@@ -390,7 +544,8 @@ elif page == "📅 Session Insights":
         sc_cnt = sessions.groupby('scenario')['status'].count().reset_index(name='count')
         fig = px.pie(sc_cnt, names='scenario', values='count',
                      color_discrete_sequence=COLORS, hole=0.45)
-        fig.update_layout(paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b', legend_title_text='')
+        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color='#94a3b8', legend_title_text='',
+                          legend=dict(font=dict(color='#94a3b8')))
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -400,7 +555,7 @@ elif page == "📅 Session Insights":
                       color_discrete_sequence=COLORS,
                       labels={'count':'Sessions','period_month':'Month'})
         fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#1e293b', xaxis=dict(gridcolor='#334155'),
+                           font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'), legend_title_text='Status')
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -412,13 +567,16 @@ elif page == "📅 Session Insights":
                   color='avg_duration', color_continuous_scale='Blues',
                   labels={'avg_duration':'Avg Duration (min)','scenario':'Scenario'})
     fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                       font_color='#1e293b', coloraxis_showscale=False,
+                       font_color='#94a3b8', coloraxis_showscale=False,
                        xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
     st.plotly_chart(fig3, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🔍 Rep Deep Dive":
-    st.markdown("# 🔍 Rep Deep Dive")
+    st.markdown("""<div class="page-hero">
+        <div class="hero-title">🔍 Rep Deep Dive</div>
+        <div class="hero-sub">Full coaching history, skill radar, and business metrics for any rep</div>
+    </div>""", unsafe_allow_html=True)
     reps = query(f"SELECT user_id, name, team FROM users WHERE role!='Team Lead' AND team IN ('{team_filter}') ORDER BY name")
     sel_rep = st.selectbox("Select Sales Rep", reps['name'].tolist())
     uid = int(reps[reps['name']==sel_rep]['user_id'].iloc[0])
@@ -443,7 +601,7 @@ elif page == "🔍 Rep Deep Dive":
         st.markdown('<div class="section-title">Coaching Effectiveness Trend</div>', unsafe_allow_html=True)
         fig = px.line(eff, x='period_month', y='coaching_effectiveness_score',
                       markers=True, color_discrete_sequence=['#38bdf8'])
-        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b',
+        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8',
                           xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -461,7 +619,7 @@ elif page == "🔍 Rep Deep Dive":
             fig2.update_layout(polar=dict(bgcolor='#0f172a',
                                           radialaxis=dict(range=[0,5], gridcolor='#334155'),
                                           angularaxis=dict(gridcolor='#334155')),
-                                paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b', showlegend=False)
+                                paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8', showlegend=False)
             st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown('<div class="section-title">Business Metrics Over Time</div>', unsafe_allow_html=True)
@@ -470,7 +628,7 @@ elif page == "🔍 Rep Deep Dive":
                           marker_color='#38bdf8'), secondary_y=False)
     fig3.add_trace(go.Scatter(x=bi['period_month'], y=bi['win_rate']*100, name='Win Rate %',
                               mode='lines+markers', line=dict(color='#f472b6')), secondary_y=True)
-    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#1e293b',
+    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8',
                        xaxis=dict(gridcolor='#334155'), legend_title_text='')
     fig3.update_yaxes(gridcolor='#334155', secondary_y=False, title_text='Deals Closed')
     fig3.update_yaxes(gridcolor='#334155', secondary_y=True,  title_text='Win Rate %')
@@ -478,8 +636,10 @@ elif page == "🔍 Rep Deep Dive":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📋 Metric Definitions":
-    st.markdown("# 📋 Metric Definitions")
-    st.markdown("Version-controlled definitions for all CoachSphere KPIs. Updated via Git — every change is tracked.")
+    st.markdown("""<div class="page-hero">
+        <div class="hero-title">📋 Metric Definitions</div>
+        <div class="hero-sub">Version-controlled KPI definitions — every formula change is tracked in Git</div>
+    </div>""", unsafe_allow_html=True)
     defs = query("SELECT * FROM metric_definitions")
     for _, row in defs.iterrows():
         with st.expander(f"**{row['display_name']}** — `{row['metric_name']}` · version {row['version']}"):
@@ -491,8 +651,10 @@ elif page == "📋 Metric Definitions":
             st.caption(f"Created: {row['created_at'][:10]}")
 
 elif page == "🤖 AI Assistant":
-    st.markdown("# 🤖 AI Assistant")
-    st.markdown("Ask any question about your coaching data in plain English. Powered by **Groq · Llama 3.3 70B** with **tool-calling**.")
+    st.markdown("""<div class="page-hero">
+        <div class="hero-title">🤖 AI Assistant</div>
+        <div class="hero-sub">Ask any question in plain English · Powered by Groq · Llama 3.3 70B · Agentic tool-calling with trace</div>
+    </div>""", unsafe_allow_html=True)
 
     if not GROQ_API_KEY:
         st.error("Groq API key not found. Add GROQ_API_KEY to your .env file.")
@@ -855,23 +1017,89 @@ elif page == "🤖 AI Assistant":
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    for msg in st.session_state.chat_history:
+    for msg_idx, msg in enumerate(st.session_state.chat_history):
         with st.chat_message(msg["role"]):
+            # ── User message: editable prompt ────────────────────────────────
+            if msg["role"] == "user":
+                _emk = f"edit_msg_{msg_idx}"
+                if st.session_state.get(_emk, False):
+                    _new_q = st.text_area("", value=msg["content"], height=80,
+                                          key=f"edit_ta_{msg_idx}", label_visibility="collapsed")
+                    _c1, _c2, _ = st.columns([1.2, 1, 6])
+                    if _c1.button("↩ Re-send", key=f"resend_{msg_idx}"):
+                        st.session_state.chat_history = st.session_state.chat_history[:msg_idx]
+                        st.session_state.chat_history.append({"role": "user", "content": _new_q})
+                        st.session_state[_emk] = False
+                        st.session_state["_processing"] = True
+                        st.rerun()
+                    if _c2.button("✕ Cancel", key=f"cancel_edit_{msg_idx}"):
+                        st.session_state[_emk] = False
+                        st.rerun()
+                else:
+                    st.markdown(msg["content"])
+                    if st.button("✏️ Edit", key=f"edit_user_{msg_idx}"):
+                        st.session_state[_emk] = True
+                        st.rerun()
+                continue
+            # ── Assistant message ─────────────────────────────────────────────
             st.markdown(msg["content"])
             if msg.get("tools_used"):
                 label = f"🔍 Agent trace — {', '.join(msg['tools_used'])}"
-                with st.expander(label):
+                with st.expander(label, expanded=True):
                     if msg.get("question"):
                         st.markdown(f"**Question interpreted as:** {msg['question']}")
                         st.divider()
                     for i, entry in enumerate(msg.get("trace", [])):
-                        st.markdown(f"**Tool selected:** `{entry.get('tool', '?')}`")
+                        st.markdown(
+                            f'<span style="color:#94a3b8;font-weight:600;font-size:0.88rem">Tool selected:</span>&nbsp;&nbsp;'
+                            f'<code style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.45);'
+                            f'padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.82rem">{entry.get("tool","?")}</code>',
+                            unsafe_allow_html=True)
                         filters = {k: v for k, v in entry.get("args", {}).items()
                                    if v and v not in ("all", None)}
                         if filters:
-                            st.markdown(f"**Filters applied:** `{filters}`")
+                            st.markdown(
+                                f'<span style="color:#94a3b8;font-weight:600;font-size:0.88rem">Filters applied:</span>&nbsp;&nbsp;'
+                                f'<code style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);'
+                                f'padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.82rem">{filters}</code>',
+                                unsafe_allow_html=True)
                         if entry.get("sql"):
-                            st.code(entry["sql"].strip(), language="sql")
+                            _sql_key    = f"sql_{msg_idx}_{i}"
+                            _edit_key   = f"editing_{msg_idx}_{i}"
+                            _result_key = f"result_{msg_idx}_{i}"
+                            if _sql_key not in st.session_state:
+                                st.session_state[_sql_key] = entry["sql"].strip()
+                            if st.session_state.get(_edit_key, False):
+                                # ── Edit mode: code block replaced by text area ──
+                                _new_sql = st.text_area(
+                                    "",
+                                    value=st.session_state[_sql_key],
+                                    height=160,
+                                    key=f"ta_{msg_idx}_{i}",
+                                    label_visibility="collapsed",
+                                )
+                                _btn_l, _btn_r, _ = st.columns([1, 1, 6])
+                                if _btn_l.button("▶ Run", key=f"btn_run_{msg_idx}_{i}"):
+                                    try:
+                                        _res = query(_new_sql)
+                                        st.session_state[_sql_key]    = _new_sql
+                                        st.session_state[_result_key] = _res
+                                        st.session_state[_edit_key]   = False
+                                    except Exception as _e:
+                                        st.error(f"Query error: {_e}")
+                                    st.rerun()
+                                if _btn_r.button("✕ Cancel", key=f"btn_cancel_{msg_idx}_{i}"):
+                                    st.session_state[_edit_key] = False
+                                    st.rerun()
+                            else:
+                                # ── View mode: code block + edit button ──
+                                st.code(st.session_state[_sql_key], language="sql")
+                                if st.button("✏️ Edit query", key=f"btn_edit_{msg_idx}_{i}"):
+                                    st.session_state[_edit_key] = True
+                                    st.rerun()
+                            if _result_key in st.session_state:
+                                st.markdown("**Edited query result:**")
+                                st.dataframe(st.session_state[_result_key], use_container_width=True, hide_index=True)
                         st.markdown(f"**Records returned:** {entry.get('records_returned', '?')}")
                         if i < len(msg.get("trace", [])) - 1:
                             st.divider()
@@ -917,16 +1145,31 @@ elif page == "🤖 AI Assistant":
                     "You have tools to query real coaching data (Jan–Jun 2024). "
                     "ALWAYS call a tool to look up data before answering — never guess numbers. "
                     "Teams: Enterprise, SMB, EMEA, APAC. After getting data, give a concise answer with specific numbers. "
+
+                    "MONTH PARSING — do this FIRST before interpreting anything else: "
+                    "Convert any month reference to YYYY-MM format. Common abbreviations and typos to recognise: "
+                    "jan/jn → 2024-01, feb/fb → 2024-02, mar/mr → 2024-03, "
+                    "apr/ap/apu/aprl → 2024-04, may → 2024-05, jun/jn/june → 2024-06. "
+                    "If the user writes a 2-digit year like '24', treat it as 2024. "
+                    "Examples: 'apr 24' → month=2024-04, 'apu 24' → month=2024-04 (typo for apr), "
+                    "'jun 24' → month=2024-06, 'march' → month=2024-03. "
+                    "NEVER interpret a 3-letter month abbreviation (jan/feb/mar/apr/may/jun) as a team name. "
+                    "Teams are only: Enterprise, SMB, EMEA, APAC. "
+                    "If no month is specified, use month='all'. "
+
                     "IMPORTANT tool selection rules: "
                     "- Use get_top_by_metric for ANY question about ranking reps by a specific metric: "
                     "  'most deals', 'highest win rate', 'best quota attainment', 'most deals closed', etc. "
                     "  Pass the metric name: deals_closed, quota_pct, win_rate_pct, effectiveness, engagement, skill_score. "
                     "- Use get_top_performers only when asked for top reps by overall coaching effectiveness. "
                     "- Use get_rep_profile only when you already know a rep's name and want their full history. "
+                    "  Do NOT call get_rep_profile just to enrich results from another tool. "
                     "- Use identify_underperforming_segments when asked about struggling, weak, or at-risk teams. "
                     "- Use compare_skill_progression to compare skills across teams or over time. "
                     "- Use explain_metric_definition when asked how a metric is defined or calculated. "
                     "- Never say a rep was 'not found' if a tool returned data — report what you found. "
+                    "- Call only ONE tool per question unless a second tool is truly necessary. "
+
                     "If data reveals a team or rep performing below the platform average or below quota < 70%, "
                     "end your response with a BLANK LINE followed by '💡 AI Suggestion (not a fact):' on its own line, "
                     "then one specific actionable coaching recommendation. Always put the suggestion on a separate paragraph."
@@ -1085,4 +1328,207 @@ elif page == "🤖 AI Assistant":
                     })
 
         st.rerun()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+elif page == "🔌 MCP Server":
+    st.markdown("""<div class="page-hero">
+        <div class="hero-title">🔌 MCP Server</div>
+        <div class="hero-sub">CoachSphere exposes its analytics tools via the Model Context Protocol — click any tool to run it live</div>
+    </div>""", unsafe_allow_html=True)
+
+    col_s, _ = st.columns([1, 4])
+    with col_s:
+        st.markdown('<div class="mcp-badge"><span class="pulse"></span> SERVER ACTIVE</div>', unsafe_allow_html=True)
+
+    st.markdown('<div style="height:20px"></div>', unsafe_allow_html=True)
+
+    # Architecture
+    st.markdown('<div class="section-title">Architecture</div>', unsafe_allow_html=True)
+    ca, cb, cc, cd, ce = st.columns([2, 1, 2, 1, 2])
+    with ca:
+        st.markdown("""<div class="arch-box"><div class="arch-label">Human Interface</div>
+            <div class="arch-name">Streamlit UI</div><div class="arch-sub">localhost:8501</div></div>""", unsafe_allow_html=True)
+    with cb:
+        st.markdown('<div style="text-align:center;padding-top:28px;color:#475569;font-size:1.4rem;">⟷</div>', unsafe_allow_html=True)
+    with cc:
+        st.markdown("""<div class="arch-box" style="border-color:rgba(52,211,153,0.3)"><div class="arch-label">Data Layer</div>
+            <div class="arch-name">SQLite + SQL Views</div><div class="arch-sub" style="color:#34d399">6 metric views · 5 tables</div></div>""", unsafe_allow_html=True)
+    with cd:
+        st.markdown('<div style="text-align:center;padding-top:28px;color:#475569;font-size:1.4rem;">⟷</div>', unsafe_allow_html=True)
+    with ce:
+        st.markdown("""<div class="arch-box" style="border-color:rgba(129,140,248,0.3)"><div class="arch-label">AI Client Interface</div>
+            <div class="arch-name">MCP Server</div><div class="arch-sub" style="color:#818cf8">Claude Desktop · any LLM client</div></div>""", unsafe_allow_html=True)
+
+    st.markdown('<div style="height:24px"></div>', unsafe_allow_html=True)
+
+    # ── Tool selection ────────────────────────────────────────────────────────
+    TOOLS_META = [
+        {"name": "get_top_performers",               "emoji": "🏆", "desc": "Top 5 reps by coaching effectiveness",       "params": ["month", "team"]},
+        {"name": "get_team_summary",                 "emoji": "👥", "desc": "Team engagement + effectiveness scores",      "params": ["month"]},
+        {"name": "get_quota_attainment",             "emoji": "📈", "desc": "Quota %, win rate, deals by team",           "params": ["month", "team"]},
+        {"name": "get_session_stats",                "emoji": "📅", "desc": "Session completion rates by team",           "params": ["month", "team"]},
+        {"name": "get_skill_improvement",            "emoji": "🧠", "desc": "Most improved reps by skill",                "params": ["skill"]},
+        {"name": "get_rep_profile",                  "emoji": "🔍", "desc": "Full 6-month history for a named rep",       "params": ["rep_name"]},
+        {"name": "get_top_by_metric",                "emoji": "🥇", "desc": "Rank reps by any metric",                   "params": ["metric", "month", "team"]},
+        {"name": "compare_skill_progression",        "emoji": "📊", "desc": "Skill trends across teams over time",        "params": ["teams", "skill"]},
+        {"name": "identify_underperforming_segments","emoji": "⚠️",  "desc": "Teams performing below platform average",   "params": ["month"]},
+        {"name": "explain_metric_definition",        "emoji": "📋", "desc": "KPI formula, description, and version",      "params": ["metric_name"]},
+    ]
+
+    if "mcp_selected" not in st.session_state:
+        st.session_state.mcp_selected = "get_top_performers"
+
+    st.markdown('<div class="section-title">10 Exposed Tools — Click to Run</div>', unsafe_allow_html=True)
+    col_l, col_r = st.columns(2)
+    for i, tool in enumerate(TOOLS_META):
+        is_sel = (st.session_state.mcp_selected == tool["name"])
+        border = "rgba(56,189,248,0.55)" if is_sel else "rgba(56,189,248,0.08)"
+        bg     = "#0d2137"               if is_sel else "#0a1628"
+        nc     = "#38bdf8"               if is_sel else "#475569"
+        col = col_l if i % 2 == 0 else col_r
+        with col:
+            st.markdown(f"""<div style="background:{bg};border-radius:12px;padding:13px 16px;
+                border:1px solid {border};margin-bottom:2px;transition:all 0.2s;">
+                <span style="font-weight:700;color:{nc};font-family:monospace;font-size:0.85rem">
+                    {tool['emoji']}  {tool['name']}()</span>
+                <div style="color:#334155;font-size:0.78rem;margin-top:3px">{tool['desc']}</div>
+            </div>""", unsafe_allow_html=True)
+            if st.button("▶ Run", key=f"mcp_{tool['name']}", use_container_width=True):
+                st.session_state.mcp_selected = tool["name"]
+                st.rerun()
+
+    # ── Live result ───────────────────────────────────────────────────────────
+    sel = st.session_state.mcp_selected
+    tool_meta = next(t for t in TOOLS_META if t["name"] == sel)
+
+    st.markdown(f'<div class="section-title" style="margin-top:28px">Live Result — '
+                f'<span style="color:#38bdf8;font-family:monospace">{sel}()</span></div>',
+                unsafe_allow_html=True)
+
+    months_list  = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
+    reps_list    = query("SELECT DISTINCT name FROM users WHERE role != 'Team Lead' ORDER BY name")['name'].tolist()
+    skills_list  = ["overall","communication","product_knowledge","objection_handling","closing_technique","active_listening"]
+    metrics_list = ["deals_closed","quota_pct","win_rate_pct","effectiveness","engagement","skill_score"]
+
+    params = {}
+    if tool_meta["params"]:
+        pcols = st.columns(len(tool_meta["params"]))
+        for i, param in enumerate(tool_meta["params"]):
+            with pcols[i]:
+                if param == "month":
+                    params["month"] = st.selectbox("month", months_list, index=len(months_list)-1, key=f"pp_month_{sel}")
+                elif param == "team":
+                    params["team"] = st.selectbox("team", ["all","Enterprise","SMB","EMEA","APAC"], key=f"pp_team_{sel}")
+                elif param == "skill":
+                    params["skill"] = st.selectbox("skill", skills_list, key=f"pp_skill_{sel}")
+                elif param == "metric":
+                    params["metric"] = st.selectbox("metric", metrics_list, key=f"pp_metric_{sel}")
+                elif param == "teams":
+                    params["teams"] = st.text_input("teams (comma-sep or 'all')", "all", key=f"pp_teams_{sel}")
+                elif param == "rep_name":
+                    params["rep_name"] = st.selectbox("rep_name", reps_list, key=f"pp_rep_{sel}")
+                elif param == "metric_name":
+                    params["metric_name"] = st.text_input("metric_name", "engagement", key=f"pp_mname_{sel}")
+
+    param_str = ", ".join(f'{k}="{v}"' for k, v in params.items())
+    with st.expander("MCP tool call", expanded=True):
+        st.code(f"{sel}({param_str})", language="python")
+
+    month = params.get("month", "all")
+    team  = params.get("team", "all")
+    mf = f"AND period_month = '{month}'" if month and month != "all" else ""
+    tf = f"AND team = '{team}'"          if team  and team  != "all" else ""
+    result_df = None
+
+    if sel == "get_top_performers":
+        result_df = query(f"""SELECT name, team, period_month,
+            ROUND(coaching_effectiveness_score,3) AS effectiveness,
+            ROUND(engagement_score,3) AS engagement, ROUND(skill_score,3) AS skill_score
+            FROM v_coaching_effectiveness WHERE 1=1 {mf} {tf}
+            ORDER BY coaching_effectiveness_score DESC LIMIT 5""")
+    elif sel == "get_team_summary":
+        result_df = query(f"""SELECT team, period_month, active_reps,
+            ROUND(avg_engagement,3) AS avg_engagement, ROUND(avg_effectiveness,3) AS avg_effectiveness
+            FROM v_team_summary WHERE 1=1 {mf} ORDER BY period_month, avg_effectiveness DESC""")
+    elif sel == "get_quota_attainment":
+        result_df = query(f"""SELECT team, period_month, ROUND(AVG(quota_attainment)*100,1) AS avg_quota_pct,
+            ROUND(AVG(win_rate)*100,1) AS avg_win_rate_pct, SUM(deals_closed) AS total_deals
+            FROM v_business_impact WHERE 1=1 {mf} {tf} GROUP BY team, period_month
+            ORDER BY period_month, avg_quota_pct DESC""")
+    elif sel == "get_session_stats":
+        result_df = query(f"""SELECT team, period_month, SUM(sessions_scheduled) AS scheduled,
+            SUM(sessions_completed) AS completed,
+            ROUND(CAST(SUM(sessions_completed) AS REAL)/SUM(sessions_scheduled)*100,1) AS completion_pct
+            FROM v_session_engagement WHERE 1=1 {mf} {tf} GROUP BY team, period_month ORDER BY period_month""")
+    elif sel == "get_skill_improvement":
+        sk = params.get("skill","overall")
+        sc = sk if sk in {"communication","product_knowledge","objection_handling","closing_technique","active_listening"} else "avg_overall_score"
+        result_df = query(f"""SELECT name, team, ROUND(MIN({sc}),2) AS start_score,
+            ROUND(MAX({sc}),2) AS end_score, ROUND(MAX({sc})-MIN({sc}),2) AS improvement
+            FROM v_skill_progression GROUP BY user_id, name, team ORDER BY improvement DESC LIMIT 10""")
+    elif sel == "get_rep_profile":
+        rep = params.get("rep_name","")
+        result_df = query(f"""SELECT ce.name, ce.team, ce.period_month,
+            ROUND(ce.coaching_effectiveness_score,3) AS effectiveness, ROUND(ce.engagement_score,3) AS engagement,
+            ROUND(ce.skill_score,3) AS skill_score, ROUND(bi.quota_attainment*100,1) AS quota_pct,
+            bi.deals_closed, ROUND(bi.win_rate*100,1) AS win_rate_pct
+            FROM v_coaching_effectiveness ce LEFT JOIN v_business_impact bi
+            ON ce.user_id=bi.user_id AND ce.period_month=bi.period_month
+            WHERE ce.name LIKE '%{rep}%' ORDER BY ce.period_month""")
+    elif sel == "get_top_by_metric":
+        metric = params.get("metric","deals_closed")
+        mm = {"deals_closed":"bi.deals_closed","quota_pct":"ROUND(bi.quota_attainment*100,1)",
+              "win_rate_pct":"ROUND(bi.win_rate*100,1)","effectiveness":"ROUND(ce.coaching_effectiveness_score,3)",
+              "engagement":"ROUND(ce.engagement_score,3)","skill_score":"ROUND(ce.skill_score,3)"}
+        col_expr = mm.get(metric,"bi.deals_closed")
+        mf2 = f"AND ce.period_month='{month}'" if month and month != "all" else ""
+        tf2 = f"AND ce.team='{team}'"           if team  and team  != "all" else ""
+        result_df = query(f"""SELECT ce.name, ce.team, ce.period_month, {col_expr} AS {metric},
+            bi.deals_closed, ROUND(bi.quota_attainment*100,1) AS quota_pct, ROUND(bi.win_rate*100,1) AS win_rate_pct
+            FROM v_coaching_effectiveness ce LEFT JOIN v_business_impact bi
+            ON ce.user_id=bi.user_id AND ce.period_month=bi.period_month
+            WHERE {col_expr} IS NOT NULL {mf2} {tf2} ORDER BY {col_expr} DESC LIMIT 5""")
+    elif sel == "compare_skill_progression":
+        teams = params.get("teams","all")
+        sk    = params.get("skill","overall")
+        sc    = sk if sk in {"communication","product_knowledge","objection_handling","closing_technique","active_listening"} else "avg_overall_score"
+        if teams and teams != "all":
+            _tlist = "', '".join([t.strip() for t in teams.split(",")])
+            tmf = f"AND team IN ('{_tlist}')"
+        else:
+            tmf = ""
+        result_df = query(f"""SELECT period_month, team, ROUND(AVG({sc}),2) AS avg_score
+            FROM v_skill_progression WHERE 1=1 {tmf} GROUP BY period_month, team ORDER BY period_month, team""")
+    elif sel == "identify_underperforming_segments":
+        result_df = query(f"""WITH platform AS (SELECT ROUND(AVG(coaching_effectiveness_score),3) AS platform_avg
+            FROM v_coaching_effectiveness WHERE 1=1 {mf})
+            SELECT team, period_month, ROUND(AVG(coaching_effectiveness_score),3) AS avg_effectiveness,
+            ROUND(AVG(engagement_score),3) AS avg_engagement, COUNT(DISTINCT user_id) AS rep_count,
+            ROUND(AVG(coaching_effectiveness_score)-(SELECT platform_avg FROM platform),3) AS vs_platform_avg
+            FROM v_coaching_effectiveness WHERE 1=1 {mf} GROUP BY team, period_month ORDER BY avg_effectiveness ASC""")
+    elif sel == "explain_metric_definition":
+        mn = params.get("metric_name","engagement")
+        result_df = query(f"""SELECT metric_name, display_name, description, formula, unit, version
+            FROM metric_definitions WHERE metric_name LIKE '%{mn}%' OR display_name LIKE '%{mn}%' LIMIT 3""")
+
+    if result_df is not None and not result_df.empty:
+        col_cfg = {}
+        if "effectiveness" in result_df.columns:
+            col_cfg["effectiveness"] = st.column_config.ProgressColumn("Effectiveness", min_value=0, max_value=1)
+        if "engagement" in result_df.columns:
+            col_cfg["engagement"] = st.column_config.ProgressColumn("Engagement", min_value=0, max_value=1)
+        st.dataframe(result_df, use_container_width=True, hide_index=True, column_config=col_cfg or None)
+    else:
+        st.info("No data returned for these parameters.")
+
+    st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
+    st.markdown("""<div class="arch-box" style="text-align:left;padding:18px 22px">
+        <div class="arch-label" style="margin-bottom:10px">Connect to Claude Desktop</div>
+        <div style="color:#64748b;font-size:0.82rem;line-height:1.8">
+            1. <code style="color:#38bdf8">pip install "mcp[cli]"</code><br>
+            2. Add <code style="color:#38bdf8">coachsphere/mcp/claude_desktop_config.json</code> block to
+               Claude Desktop → Settings → Developer → Edit Config<br>
+            3. Restart Claude Desktop — all 10 tools appear automatically in the chat bar
+        </div>
+    </div>""", unsafe_allow_html=True)
 
