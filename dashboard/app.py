@@ -1411,10 +1411,18 @@ elif page == "🤖 AI Assistant":
                     "then one specific actionable coaching recommendation. Always put the suggestion on a separate paragraph."
                 )
 
-                messages = [
-                    {"role": "system", "content": SYSTEM},
-                    {"role": "user",   "content": user_q}
-                ]
+                # Build messages with last 6 turns of history for follow-up chaining
+                history_msgs = []
+                prior = st.session_state.chat_history[:-1]  # exclude current user msg
+                for h in prior[-6:]:
+                    if h["role"] in ("user", "assistant"):
+                        history_msgs.append({"role": h["role"], "content": h["content"]})
+
+                messages = (
+                    [{"role": "system", "content": SYSTEM}]
+                    + history_msgs
+                    + [{"role": "user", "content": user_q}]
+                )
 
                 tools_used    = []
                 last_data     = None
@@ -1483,9 +1491,10 @@ elif page == "🤖 AI Assistant":
                     # Model generated a malformed tool call (usually due to typos/abbreviations).
                     # Retry once with an explicit instruction to rephrase the query first.
                     try:
-                        retry_messages = [
-                            {"role": "system", "content": SYSTEM},
-                            {
+                        retry_messages = (
+                            [{"role": "system", "content": SYSTEM}]
+                            + history_msgs
+                            + [{
                                 "role": "user",
                                 "content": (
                                     f"The user asked: '{user_q}'. "
@@ -1494,8 +1503,8 @@ elif page == "🤖 AI Assistant":
                                     "(e.g. 'mont of jan' = January 2024, 'top team' = best performing team), "
                                     "then call the appropriate tool to answer it."
                                 )
-                            }
-                        ]
+                            }]
+                        )
                         retry_tools_used    = []
                         retry_last_data     = None
                         retry_trace_entries = []
