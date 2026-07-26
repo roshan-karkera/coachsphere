@@ -1394,6 +1394,13 @@ elif page == "🤖 AI Assistant":
                     "- Never say a rep was 'not found' if a tool returned data — report what you found. "
                     "- Call only ONE tool per question unless a second tool is truly necessary. "
 
+                    "EMPTY / OUT-OF-RANGE DATA HANDLING — if a tool returns an empty result or no rows: "
+                    "ALWAYS respond with exactly: "
+                    "'No data found for that period. The dataset covers January–June 2024.' "
+                    "Do NOT say 'could not be found', do NOT make up data, do NOT suggest alternatives. "
+                    "This applies when the user asks about any month outside Jan–Jun 2024 (e.g. Jul 2024, Jan 2025, any 2023 date), "
+                    "or any team/rep that does not exist in the data. "
+
                     "If data reveals a team or rep performing below the platform average or below quota < 70%, "
                     "end your response with a BLANK LINE followed by '💡 AI Suggestion (not a fact):' on its own line, "
                     "then one specific actionable coaching recommendation. Always put the suggestion on a separate paragraph."
