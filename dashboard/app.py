@@ -67,6 +67,11 @@ st.markdown("""
 [data-testid="stSidebar"] * { color: #e2e8f0 !important; }
 h1,h2,h3,h4,p,span,label { color: #e2e8f0; }
 .stMarkdown p { color: #cbd5e1; }
+[data-testid="stChatMessage"] .stMarkdown p,
+[data-testid="stChatMessage"] .stMarkdown li,
+[data-testid="stChatMessage"] .stMarkdown span,
+[data-testid="stChatMessage"] p,
+[data-testid="stChatMessage"] li { color: #ffffff !important; }
 
 /* ── Hide Streamlit chrome (top & bottom bars) ───────────── */
 header[data-testid="stHeader"] { display: none !important; }
