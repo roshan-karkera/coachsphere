@@ -1365,6 +1365,29 @@ elif page == "🤖 AI Assistant":
         st.session_state["_processing"] = False
         user_q = st.session_state.chat_history[-1]["content"]
 
+        # ── Conversational pre-filter — no tool call needed ──────────
+        # If the query has no data-related keywords → treat as conversational
+        _data_kw = {
+            "rep","reps","team","teams","enterprise","smb","emea","apac",
+            "deal","deals","quota","win","rate","skill","score","session","sessions",
+            "jan","feb","mar","apr","may","jun","2024","2023","2025","month",
+            "top","best","worst","compare","show","give","list","find","get",
+            "who","which","what","how","performance","metric","metrics",
+            "engagement","effectiveness","coaching","progression","improvement",
+            "first","1st","2nd","3rd","last","highest","lowest","most","least"
+        }
+        _lower_q = user_q.lower().strip()
+        _words = set(_lower_q.translate(str.maketrans("","","?!.,")).split())
+        if not _words.intersection(_data_kw):
+            _chat_reply = "Glad to help! Ask me anything about the coaching data. 😊"
+            if any(g in _lower_q for g in ("hi","hello","hey")):
+                _chat_reply = "Hey! Ask me anything about your reps or teams."
+            st.session_state.chat_history.append({
+                "role": "assistant", "content": _chat_reply,
+                "tools_used": [], "data": None, "trace": [], "question": user_q
+            })
+            st.rerun()
+
         with st.spinner("Agent thinking..."):
             try:
                 client = Groq(api_key=GROQ_API_KEY)
@@ -1398,6 +1421,9 @@ elif page == "🤖 AI Assistant":
                     "- Use explain_metric_definition when asked how a metric is defined or calculated. "
                     "- Never say a rep was 'not found' if a tool returned data — report what you found. "
                     "- Call only ONE tool per question unless a second tool is truly necessary. "
+                    "- For greetings, thanks, acknowledgements, or any non-data message "
+                    "(e.g. 'hi', 'thanks', 'okay', 'good', 'great', 'cool', 'nice', 'got it', 'okay that's good'), "
+                    "NEVER call a tool. Just reply conversationally in one short sentence. "
 
                     "EMPTY / OUT-OF-RANGE DATA HANDLING — if a tool returns an empty result or no rows: "
                     "ALWAYS respond with exactly: "
