@@ -14,6 +14,8 @@ import streamlit as st
 import os
 import sys
 import json
+import base64
+from pathlib import Path
 
 # Load API key — Streamlit Cloud secrets take priority, then .env for local dev
 try:
@@ -178,11 +180,80 @@ div[class*="stBottom"] {
 .stSelectbox > div > div, .stMultiSelect > div > div {
     background: #0f1f35 !important; border-color: rgba(56,189,248,0.15) !important; color: #e2e8f0 !important;
 }
+[data-testid="stSelectbox"] div[data-baseweb="select"] *,
+[data-testid="stSelectbox"] input,
+[data-testid="stSelectbox"] div[class*="ValueContainer"] *,
+[data-testid="stSelectbox"] div[class*="singleValue"] {
+    color: #e2e8f0 !important;
+}
+/* Dropdown open — portal-level selectors */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+div[data-baseweb="popover"] > div > div,
+div[data-baseweb="menu"],
+ul[data-baseweb="menu"],
+div[role="listbox"],
+div[role="listbox"] > div,
+div[class*="Menu"],
+div[class*="menu"] {
+    background: #070d1a !important;
+    border: 1px solid rgba(56,189,248,0.15) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+}
+/* Option items */
+li[role="option"],
+div[role="option"],
+div[data-baseweb="option"],
+div[data-baseweb="menu"] li,
+ul[data-baseweb="menu"] li {
+    background: #070d1a !important;
+    color: #e2e8f0 !important;
+}
+li[role="option"]:hover,
+div[role="option"]:hover,
+div[data-baseweb="option"]:hover,
+li[aria-selected="true"],
+div[aria-selected="true"] {
+    background: #0f1f35 !important;
+    color: #38bdf8 !important;
+}
+/* Multiselect — full dark theme */
+[data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
+[data-testid="stMultiSelect"] div[data-baseweb="base-input"],
+[data-testid="stMultiSelect"] > div > div,
+[data-testid="stMultiSelect"] > div > div > div {
+    background: #0f1f35 !important;
+    border-color: rgba(56,189,248,0.15) !important;
+}
+[data-testid="stMultiSelect"] span[data-baseweb="tag"],
+.stMultiSelect span[data-baseweb="tag"] {
+    background: #0a1628 !important;
+    border: 1px solid rgba(56,189,248,0.3) !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+}
+[data-testid="stMultiSelect"] span[data-baseweb="tag"] span,
+[data-testid="stMultiSelect"] span[data-baseweb="tag"] *,
+[data-baseweb="tag"] span,
+[data-baseweb="tag"] * {
+    color: #ffffff !important;
+    fill: #94a3b8 !important;
+}
 [data-testid="stExpander"] {
     background: #0f1f35 !important; border: 1px solid rgba(56,189,248,0.1) !important; border-radius: 12px !important;
 }
 [data-testid="stExpander"] summary { color: #94a3b8 !important; }
 
+/* ── Inline code (backticks in markdown/expander labels) ─── */
+code {
+    background: #0a1628 !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(56,189,248,0.3) !important;
+    border-radius: 6px !important;
+    padding: 2px 10px !important;
+    font-size: 0.85em !important;
+}
 /* ── Code blocks ─────────────────────────────────────────── */
 [data-testid="stCodeBlock"],
 [data-testid="stCodeBlock"] pre,
@@ -194,15 +265,106 @@ div[class*="stBottom"] {
     border-radius: 10px !important;
 }
 [data-testid="stCodeBlock"] span { opacity: 1 !important; }
-/* Expanders dark */
-[data-testid="stExpander"] {
+/* ── Metric Definitions formula block ────────────────────── */
+details pre {
+    color: #7dd3fc !important;
+    background: rgba(15,31,53,0.9) !important;
+    border: 1px solid rgba(56,189,248,0.3) !important;
+    border-radius: 6px !important;
+    padding: 12px 16px !important;
+    font-family: monospace !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    white-space: pre-wrap !important;
+    overflow-x: auto !important;
+    margin: 0 0 12px !important;
+}
+/* ── Code block copy button ───────────────────────────────── */
+[data-testid="stCodeBlock"] button,
+[data-testid="stCodeCopyButton"],
+button[title="Copy to clipboard"],
+button[aria-label="Copy to clipboard"] {
+    background: rgba(15,31,53,0.95) !important;
+    border: 1px solid rgba(56,189,248,0.3) !important;
+    color: #38bdf8 !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+[data-testid="stCodeBlock"] button svg,
+button[title="Copy to clipboard"] svg,
+button[aria-label="Copy to clipboard"] svg {
+    stroke: #38bdf8 !important;
+    fill: none !important;
+}
+/* Global tooltip — Streamlit renders these as portals */
+div[role="tooltip"],
+div[data-radix-popper-content-wrapper] div,
+[data-testid="stTooltipContent"],
+.stTooltip {
+    background: #0f1f35 !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(56,189,248,0.25) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+    font-size: 0.78rem !important;
+}
+/* Expanders dark — open and closed states identical */
+[data-testid="stExpander"],
+[data-testid="stExpander"] details,
+[data-testid="stExpander"] details[open] {
     background: #0a1628 !important;
     border: 1px solid rgba(56,189,248,0.1) !important;
     border-radius: 12px !important;
 }
 [data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary:hover,
+[data-testid="stExpander"] summary:focus,
+[data-testid="stExpander"] summary:active,
+[data-testid="stExpander"] details[open] summary,
+[data-testid="stExpander"] details[open] summary:hover,
+[data-testid="stExpander"] details[open] summary:focus {
+    background: #0a1628 !important;
+    color: #94a3b8 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+[data-testid="stExpander"] summary *,
+[data-testid="stExpander"] details[open] summary *,
 [data-testid="stExpander"] summary span,
-[data-testid="stExpander"] p { color: #94a3b8 !important; }
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary svg {
+    color: #94a3b8 !important;
+    fill: #94a3b8 !important;
+    stroke: #94a3b8 !important;
+}
+
+/* ── Chat messages ───────────────────────────────────────── */
+[data-testid="stChatMessage"],
+[data-testid="stChatMessage"] > div,
+[data-testid="stChatMessage"] > div > div {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+/* ── Chat avatars — 3D gradient style ───────────────────── */
+[data-testid="stChatMessageAvatarUser"] {
+    background: linear-gradient(135deg, #f97316 0%, #ef4444 100%) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 14px rgba(249,115,22,0.45), 0 1px 3px rgba(0,0,0,0.4) !important;
+    border: none !important;
+}
+[data-testid="stChatMessageAvatarAssistant"] {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 14px rgba(245,158,11,0.45), 0 1px 3px rgba(0,0,0,0.4) !important;
+    border: none !important;
+}
+[data-testid="stChatMessageAvatarUser"] svg,
+[data-testid="stChatMessageAvatarAssistant"] svg {
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)) !important;
+}
 
 /* ── Dataframe ───────────────────────────────────────────── */
 [data-testid="stDataFrame"] iframe { border-radius: 12px; }
@@ -230,11 +392,49 @@ def query(sql, params=()):
 def fmt_score(v): return f"{v:.2f}"
 def fmt_pct(v):   return f"{v*100:.1f}%"
 
+def _icon(name: str, size: int = 40) -> str:
+    """Return an <img> tag for a page icon from dashboard/assets/."""
+    p = Path(__file__).parent / "assets" / name
+    if not p.exists():
+        return ""
+    b64 = base64.b64encode(p.read_bytes()).decode()
+    return (f'<img src="data:image/png;base64,{b64}" '
+            f'style="width:{size}px;height:{size}px;vertical-align:middle;'
+            f'margin-right:10px;border-radius:8px">')
+
+def dark_table(df):
+    """Render a DataFrame as a dark-themed HTML table matching the UI palette."""
+    if df is None or df.empty:
+        return
+    headers = "".join(
+        f'<th style="padding:8px 14px;text-align:left;color:#38bdf8;font-size:0.78rem;'
+        f'font-weight:600;text-transform:uppercase;letter-spacing:0.05em;'
+        f'border-bottom:1px solid rgba(56,189,248,0.2);white-space:nowrap">{c}</th>'
+        for c in df.columns
+    )
+    rows = ""
+    for idx, row in df.iterrows():
+        bg = "rgba(15,31,53,0.6)" if idx % 2 == 0 else "rgba(10,22,40,0.6)"
+        cells = "".join(
+            f'<td style="padding:7px 14px;color:#cbd5e1;font-size:0.82rem;'
+            f'border-bottom:1px solid rgba(56,189,248,0.06);white-space:nowrap">{v}</td>'
+            for v in row
+        )
+        rows += f'<tr style="background:{bg}">{cells}</tr>'
+    html = f"""
+    <div style="overflow-x:auto;border-radius:10px;border:1px solid rgba(56,189,248,0.18);margin-top:6px">
+      <table style="width:100%;border-collapse:collapse;background:rgba(10,22,40,0.8)">
+        <thead><tr style="background:rgba(15,31,53,0.9)">{headers}</tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>"""
+    st.markdown(html, unsafe_allow_html=True)
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-        <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <svg width="90" height="90" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
             <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
             <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
@@ -270,7 +470,7 @@ team_filter = "','".join(sel_teams) if sel_teams else "''"
 # ═══════════════════════════════════════════════════════════════════════════════
 if page == "📊 Overview":
     st.markdown(f"""<div class="page-hero">
-        <div class="hero-title">📊 Platform Overview</div>
+        <div class="hero-title">{_icon('icon_overview.png')} Platform Overview</div>
         <div class="hero-sub">Platform metrics · {sel_month} &nbsp;·&nbsp; {len(sel_teams)} teams active</div>
     </div>""", unsafe_allow_html=True)
 
@@ -400,8 +600,8 @@ if page == "📊 Overview":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "👥 Team Analytics":
-    st.markdown("""<div class="page-hero">
-        <div class="hero-title">👥 Team Analytics</div>
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">{_icon('icon_team.png')} Team Analytics</div>
         <div class="hero-sub">Effectiveness, engagement, and quota attainment across all teams</div>
     </div>""", unsafe_allow_html=True)
     team_sum = query(f"""
@@ -453,17 +653,12 @@ elif page == "👥 Team Analytics":
         WHERE ce.period_month=? AND ce.team IN ('{team_filter}')
         ORDER BY effectiveness DESC LIMIT 10
     """, (sel_month,))
-    st.dataframe(top, use_container_width=True, hide_index=True,
-                 column_config={
-                     'effectiveness': st.column_config.ProgressColumn('Effectiveness', min_value=0, max_value=1),
-                     'engagement':    st.column_config.ProgressColumn('Engagement',    min_value=0, max_value=1),
-                     'quota_pct':     st.column_config.NumberColumn('Quota %', format='%.1f%%'),
-                 })
+    dark_table(top)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🧠 Skill Progression":
-    st.markdown("""<div class="page-hero">
-        <div class="hero-title">🧠 Skill Progression</div>
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">{_icon('icon_skill.png')} Skill Progression</div>
         <div class="hero-sub">Track communication, objection handling, and closing technique over time</div>
     </div>""", unsafe_allow_html=True)
     skills = ['communication','product_knowledge','objection_handling','closing_technique','active_listening']
@@ -524,8 +719,8 @@ elif page == "🧠 Skill Progression":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📅 Session Insights":
-    st.markdown("""<div class="page-hero">
-        <div class="hero-title">📅 Session Insights</div>
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">{_icon('icon_session.png')} Session Insights</div>
         <div class="hero-sub">Completion rates, session duration, and scenario breakdown</div>
     </div>""", unsafe_allow_html=True)
 
@@ -573,8 +768,8 @@ elif page == "📅 Session Insights":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🔍 Rep Deep Dive":
-    st.markdown("""<div class="page-hero">
-        <div class="hero-title">🔍 Rep Deep Dive</div>
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">{_icon('icon_rep.png')} Rep Deep Dive</div>
         <div class="hero-sub">Full coaching history, skill radar, and business metrics for any rep</div>
     </div>""", unsafe_allow_html=True)
     reps = query(f"SELECT user_id, name, team FROM users WHERE role!='Team Lead' AND team IN ('{team_filter}') ORDER BY name")
@@ -636,23 +831,48 @@ elif page == "🔍 Rep Deep Dive":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "📋 Metric Definitions":
-    st.markdown("""<div class="page-hero">
-        <div class="hero-title">📋 Metric Definitions</div>
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">{_icon('icon_metric.png')} Metric Definitions</div>
         <div class="hero-sub">Version-controlled KPI definitions — every formula change is tracked in Git</div>
     </div>""", unsafe_allow_html=True)
     defs = query("SELECT * FROM metric_definitions")
+    import html as _html
     for _, row in defs.iterrows():
-        with st.expander(f"**{row['display_name']}** — `{row['metric_name']}` · version {row['version']}"):
-            st.markdown(f"**Description:** {row['description']}")
-            st.code(row['formula'], language='sql')
-            col1, col2 = st.columns(2)
-            col1.markdown(f"**Unit:** `{row['unit']}`")
-            col2.markdown(f"**Version:** `{row['version']}`")
-            st.caption(f"Created: {row['created_at'][:10]}")
+        formula_esc = _html.escape(str(row['formula']))
+        st.markdown(f"""
+        <details style="background:rgba(10,22,40,0.6);border:1px solid rgba(56,189,248,0.12);
+            border-radius:10px;margin-bottom:8px;overflow:hidden">
+            <summary style="cursor:pointer;padding:14px 18px;color:#cbd5e1;font-size:0.88rem;
+                list-style:none;display:flex;align-items:center;gap:8px;user-select:none">
+                <span class="det-arrow" style="color:#38bdf8;font-size:0.75rem;transition:transform 0.2s">▶</span>
+                {_html.escape(str(row['display_name']))}
+                &nbsp;·&nbsp;
+                <code style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);
+                    padding:2px 8px;border-radius:5px;font-family:monospace;font-size:0.82rem">{_html.escape(str(row['metric_name']))}</code>
+                &nbsp;·&nbsp; {_html.escape(str(row['version']))}
+            </summary>
+            <div style="padding:14px 18px;border-top:1px solid rgba(56,189,248,0.1)">
+                <p style="color:#94a3b8;font-size:0.85rem;margin:0 0 12px">{_html.escape(str(row['description']))}</p>
+                <pre style="background:rgba(15,31,53,0.9);border:1px solid rgba(56,189,248,0.3);
+                    border-radius:6px;padding:12px 16px;color:#7dd3fc;font-family:monospace;
+                    font-size:0.88rem;overflow-x:auto;margin:0 0 12px;white-space:pre-wrap;
+                    font-weight:500;letter-spacing:0.01em">{formula_esc}</pre>
+                <div style="display:flex;gap:24px;font-size:0.8rem">
+                    <span><span style="color:#94a3b8;font-weight:600">Unit:</span>
+                        <span style="color:#cbd5e1"> {_html.escape(str(row['unit']))}</span></span>
+                    <span><span style="color:#94a3b8;font-weight:600">Version:</span>
+                        <span style="color:#cbd5e1"> {_html.escape(str(row['version']))}</span></span>
+                    <span><span style="color:#94a3b8;font-weight:600">Created:</span>
+                        <span style="color:#cbd5e1"> {str(row['created_at'])[:10]}</span></span>
+                </div>
+            </div>
+        </details>
+        <style>details[open] .det-arrow {{ transform: rotate(90deg); }}</style>
+        """, unsafe_allow_html=True)
 
 elif page == "🤖 AI Assistant":
-    st.markdown("""<div class="page-hero">
-        <div class="hero-title">🤖 AI Assistant</div>
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">{_icon('robot_avatar.png')} AI Assistant</div>
         <div class="hero-sub">Ask any question in plain English · Powered by Groq · Llama 3.3 70B · Agentic tool-calling with trace</div>
     </div>""", unsafe_allow_html=True)
 
@@ -1017,8 +1237,12 @@ elif page == "🤖 AI Assistant":
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
+    _ASSETS = Path(__file__).parent / "assets"
+    _ROBOT_AVT = str(_ASSETS / "robot_avatar.png")
+    _USER_AVT  = "👤"
     for msg_idx, msg in enumerate(st.session_state.chat_history):
-        with st.chat_message(msg["role"]):
+        _avatar = _ROBOT_AVT if msg["role"] == "assistant" else _USER_AVT
+        with st.chat_message(msg["role"], avatar=_avatar):
             # ── User message: editable prompt ────────────────────────────────
             if msg["role"] == "user":
                 _emk = f"edit_msg_{msg_idx}"
@@ -1045,23 +1269,23 @@ elif page == "🤖 AI Assistant":
             st.markdown(msg["content"])
             if msg.get("tools_used"):
                 label = f"🔍 Agent trace — {', '.join(msg['tools_used'])}"
-                with st.expander(label, expanded=True):
+                with st.expander(label, expanded=False):
                     if msg.get("question"):
                         st.markdown(f"**Question interpreted as:** {msg['question']}")
                         st.divider()
                     for i, entry in enumerate(msg.get("trace", [])):
                         st.markdown(
-                            f'<span style="color:#94a3b8;font-weight:600;font-size:0.88rem">Tool selected:</span>&nbsp;&nbsp;'
-                            f'<code style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.45);'
-                            f'padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.82rem">{entry.get("tool","?")}</code>',
+                            f'<p style="margin:4px 0"><span style="color:#94a3b8;font-weight:600;font-size:0.88rem">Tool selected:</span>&nbsp;&nbsp;'
+                            f'<span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.45);'
+                            f'padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.82rem;display:inline-block">{entry.get("tool","?")}</span></p>',
                             unsafe_allow_html=True)
                         filters = {k: v for k, v in entry.get("args", {}).items()
                                    if v and v not in ("all", None)}
                         if filters:
                             st.markdown(
-                                f'<span style="color:#94a3b8;font-weight:600;font-size:0.88rem">Filters applied:</span>&nbsp;&nbsp;'
-                                f'<code style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);'
-                                f'padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.82rem">{filters}</code>',
+                                f'<p style="margin:4px 0"><span style="color:#94a3b8;font-weight:600;font-size:0.88rem">Filters applied:</span>&nbsp;&nbsp;'
+                                f'<span style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);'
+                                f'padding:3px 10px;border-radius:6px;font-family:monospace;font-size:0.82rem;display:inline-block">{filters}</span></p>',
                                 unsafe_allow_html=True)
                         if entry.get("sql"):
                             _sql_key    = f"sql_{msg_idx}_{i}"
@@ -1099,13 +1323,13 @@ elif page == "🤖 AI Assistant":
                                     st.rerun()
                             if _result_key in st.session_state:
                                 st.markdown("**Edited query result:**")
-                                st.dataframe(st.session_state[_result_key], use_container_width=True, hide_index=True)
+                                dark_table(st.session_state[_result_key])
                         st.markdown(f"**Records returned:** {entry.get('records_returned', '?')}")
                         if i < len(msg.get("trace", [])) - 1:
                             st.divider()
                     if msg.get("data"):
                         st.markdown("**Result data:**")
-                        st.dataframe(pd.DataFrame(msg["data"]), use_container_width=True, hide_index=True)
+                        dark_table(pd.DataFrame(msg["data"]))
 
     # Example prompts on first load
     if not st.session_state.chat_history:
@@ -1331,8 +1555,8 @@ elif page == "🤖 AI Assistant":
 
 # ═══════════════════════════════════════════════════════════════════════════════
 elif page == "🔌 MCP Server":
-    st.markdown("""<div class="page-hero">
-        <div class="hero-title">🔌 MCP Server</div>
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">{_icon('icon_mcp.png')} MCP Server</div>
         <div class="hero-sub">CoachSphere exposes its analytics tools via the Model Context Protocol — click any tool to run it live</div>
     </div>""", unsafe_allow_html=True)
 
@@ -1517,18 +1741,26 @@ elif page == "🔌 MCP Server":
             col_cfg["effectiveness"] = st.column_config.ProgressColumn("Effectiveness", min_value=0, max_value=1)
         if "engagement" in result_df.columns:
             col_cfg["engagement"] = st.column_config.ProgressColumn("Engagement", min_value=0, max_value=1)
-        st.dataframe(result_df, use_container_width=True, hide_index=True, column_config=col_cfg or None)
+        dark_table(result_df)
     else:
         st.info("No data returned for these parameters.")
 
     st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
-    st.markdown("""<div class="arch-box" style="text-align:left;padding:18px 22px">
-        <div class="arch-label" style="margin-bottom:10px">Connect to Claude Desktop</div>
-        <div style="color:#64748b;font-size:0.82rem;line-height:1.8">
-            1. <code style="color:#38bdf8">pip install "mcp[cli]"</code><br>
-            2. Add <code style="color:#38bdf8">coachsphere/mcp/claude_desktop_config.json</code> block to
-               Claude Desktop → Settings → Developer → Edit Config<br>
-            3. Restart Claude Desktop — all 10 tools appear automatically in the chat bar
+    st.markdown("""<div class="arch-box" style="text-align:left;padding:22px 26px">
+        <div style="color:#38bdf8;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px">Connect to Claude Desktop</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+                <span style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0">1</span>
+                <span style="color:#94a3b8;font-size:0.83rem;line-height:1.6">Install the MCP library &nbsp;<code style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);padding:2px 8px;border-radius:5px;font-family:monospace">pip install "mcp[cli]"</code></span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+                <span style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0">2</span>
+                <span style="color:#94a3b8;font-size:0.83rem;line-height:1.6">Add <code style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);padding:2px 8px;border-radius:5px;font-family:monospace">claude_desktop_config.json</code> block to Claude Desktop → Settings → Developer → Edit Config</span>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+                <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0">3</span>
+                <span style="color:#94a3b8;font-size:0.83rem;line-height:1.6">Restart Claude Desktop — all <span style="color:#34d399;font-weight:600">10 tools</span> appear automatically in the chat bar</span>
+            </div>
         </div>
     </div>""", unsafe_allow_html=True)
 

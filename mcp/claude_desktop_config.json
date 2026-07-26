@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "coachsphere": {
+      "command": "python",
+      "args": [
+        "C:\\Users\\User\\OneDrive\\Desktop\\DE\\Job\\coachsphere\\mcp\\server.py"
+      ]
+    }
+  }
+}
