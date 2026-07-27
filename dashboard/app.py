@@ -8,7 +8,16 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 from plotly.subplots import make_subplots
+
+# ── Global Plotly theme — white text on dark background ────────────────────────
+pio.templates["coachsphere"] = pio.templates["plotly_dark"]
+pio.templates["coachsphere"].layout.font = dict(color="#e2e8f0", family="Inter, sans-serif")
+pio.templates["coachsphere"].layout.legend = dict(font=dict(color="#e2e8f0"))
+pio.templates["coachsphere"].layout.xaxis = dict(tickfont=dict(color="#e2e8f0"), titlefont=dict(color="#e2e8f0"))
+pio.templates["coachsphere"].layout.yaxis = dict(tickfont=dict(color="#e2e8f0"), titlefont=dict(color="#e2e8f0"))
+pio.templates.default = "coachsphere"
 import streamlit as st
 
 import os
@@ -745,7 +754,7 @@ elif page == "📅 Session Insights":
         fig = px.pie(sc_cnt, names='scenario', values='count',
                      color_discrete_sequence=COLORS, hole=0.45)
         fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color='#e2e8f0', legend_title_text='',
-                          legend=dict(font=dict(color='#94a3b8')))
+                          legend=dict(font=dict(color='#e2e8f0')))
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
