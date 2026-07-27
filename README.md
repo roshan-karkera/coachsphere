@@ -13,6 +13,12 @@ CoachSphere is a fictional B2B SaaS company that coaches enterprise sales teams 
 
 ---
 
+## State Flow
+
+![CoachSphere State Flow](docs/state_flow.svg)
+
+---
+
 ## Architecture
 
 ```

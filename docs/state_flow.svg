@@ -1,0 +1,125 @@
+<svg viewBox="0 0 900 740" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, sans-serif">
+  <title>CoachSphere State Flow Diagram</title>
+  <desc>Data flows from Python Faker through SQLite, metric views, and into the Streamlit dashboard and MCP server</desc>
+
+  <rect width="900" height="740" fill="#0a1628"/>
+
+  <!-- Title -->
+  <text x="450" y="36" text-anchor="middle" fill="#38bdf8" font-size="15" font-weight="700" letter-spacing="1">COACHSPHERE — STATE FLOW</text>
+
+  <!-- LAYER LABELS -->
+  <text x="18" y="90" fill="#475569" font-size="10" font-weight="600" letter-spacing="1.5">DATA LAYER</text>
+  <text x="18" y="230" fill="#475569" font-size="10" font-weight="600" letter-spacing="1.5">STORAGE</text>
+  <text x="18" y="360" fill="#475569" font-size="10" font-weight="600" letter-spacing="1.5">METRICS LAYER</text>
+  <text x="18" y="490" fill="#475569" font-size="10" font-weight="600" letter-spacing="1.5">CONSUMERS</text>
+  <text x="18" y="650" fill="#475569" font-size="10" font-weight="600" letter-spacing="1.5">AI / MCP</text>
+
+  <!-- ROW 1: Data Generation -->
+  <rect x="130" y="58" width="160" height="52" rx="8" fill="#0f2035" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="210" y="80" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="700">generate_data.py</text>
+  <text x="210" y="97" text-anchor="middle" fill="#94a3b8" font-size="9.5">Python · Faker · NumPy</text>
+
+  <rect x="360" y="58" width="160" height="52" rx="8" fill="#0f2035" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="440" y="80" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="700">apply_metrics.py</text>
+  <text x="440" y="97" text-anchor="middle" fill="#94a3b8" font-size="9.5">Creates 6 SQL Views</text>
+
+  <line x1="290" y1="84" x2="358" y2="84" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- ROW 2: SQLite DB -->
+  <rect x="245" y="195" width="390" height="58" rx="8" fill="#0f2035" stroke="#7dd3fc" stroke-width="2"/>
+  <text x="440" y="220" text-anchor="middle" fill="#7dd3fc" font-size="12" font-weight="700">coachsphere.db  (SQLite)</text>
+  <text x="440" y="238" text-anchor="middle" fill="#94a3b8" font-size="9.5">users · coaching_sessions · skill_assessments · session_feedback · business_metrics · metric_definitions</text>
+
+  <line x1="210" y1="110" x2="300" y2="194" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-blue)" stroke-dasharray="4,3"/>
+  <line x1="440" y1="110" x2="440" y2="194" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-blue)" stroke-dasharray="4,3"/>
+
+  <!-- ROW 3: Metric Views -->
+  <rect x="100" y="325" width="130" height="44" rx="6" fill="#0a1e35" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="165" y="344" text-anchor="middle" fill="#a5b4fc" font-size="9.5" font-weight="600">v_session_engagement</text>
+  <text x="165" y="358" text-anchor="middle" fill="#6366f1" font-size="8.5">engagement_score</text>
+
+  <rect x="248" y="325" width="130" height="44" rx="6" fill="#0a1e35" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="313" y="344" text-anchor="middle" fill="#a5b4fc" font-size="9.5" font-weight="600">v_skill_progression</text>
+  <text x="313" y="358" text-anchor="middle" fill="#6366f1" font-size="8.5">skill scores</text>
+
+  <rect x="396" y="325" width="130" height="44" rx="6" fill="#0a1e35" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="461" y="344" text-anchor="middle" fill="#a5b4fc" font-size="9.5" font-weight="600">v_business_impact</text>
+  <text x="461" y="358" text-anchor="middle" fill="#6366f1" font-size="8.5">quota · win_rate</text>
+
+  <rect x="544" y="325" width="140" height="44" rx="6" fill="#0a1e35" stroke="#818cf8" stroke-width="1.8"/>
+  <text x="614" y="344" text-anchor="middle" fill="#c7d2fe" font-size="9.5" font-weight="700">v_coaching_effectiveness</text>
+  <text x="614" y="358" text-anchor="middle" fill="#818cf8" font-size="8.5">composite score</text>
+
+  <rect x="700" y="325" width="120" height="44" rx="6" fill="#0a1e35" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="760" y="344" text-anchor="middle" fill="#a5b4fc" font-size="9.5" font-weight="600">v_team_summary</text>
+  <text x="760" y="358" text-anchor="middle" fill="#6366f1" font-size="8.5">team rollup</text>
+
+  <line x1="340" y1="253" x2="200" y2="324" stroke="#6366f1" stroke-width="1.2" marker-end="url(#arr-indigo)"/>
+  <line x1="390" y1="253" x2="340" y2="324" stroke="#6366f1" stroke-width="1.2" marker-end="url(#arr-indigo)"/>
+  <line x1="440" y1="253" x2="461" y2="324" stroke="#6366f1" stroke-width="1.2" marker-end="url(#arr-indigo)"/>
+  <line x1="490" y1="253" x2="580" y2="324" stroke="#818cf8" stroke-width="1.8" marker-end="url(#arr-violet)"/>
+  <line x1="530" y1="253" x2="730" y2="324" stroke="#6366f1" stroke-width="1.2" marker-end="url(#arr-indigo)"/>
+
+  <!-- ROW 4: Consumers -->
+  <rect x="80" y="455" width="300" height="58" rx="8" fill="#0f2035" stroke="#34d399" stroke-width="1.8"/>
+  <text x="230" y="478" text-anchor="middle" fill="#34d399" font-size="12" font-weight="700">Streamlit Dashboard</text>
+  <text x="230" y="496" text-anchor="middle" fill="#94a3b8" font-size="9.5">8 pages · Plotly charts · dark theme</text>
+
+  <rect x="520" y="455" width="300" height="58" rx="8" fill="#0f2035" stroke="#f59e0b" stroke-width="1.8"/>
+  <text x="670" y="478" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">MCP Server (FastMCP)</text>
+  <text x="670" y="496" text-anchor="middle" fill="#94a3b8" font-size="9.5">10 tools · stdio transport</text>
+
+  <line x1="300" y1="369" x2="230" y2="454" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <line x1="580" y1="369" x2="640" y2="454" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+
+  <!-- ROW 5: AI / MCP Clients -->
+  <rect x="80" y="620" width="140" height="52" rx="8" fill="#0f2035" stroke="#e879f9" stroke-width="1.5"/>
+  <text x="150" y="643" text-anchor="middle" fill="#e879f9" font-size="11" font-weight="700">AI Assistant</text>
+  <text x="150" y="659" text-anchor="middle" fill="#94a3b8" font-size="9">Groq · Llama 3.3 70B</text>
+
+  <rect x="520" y="620" width="140" height="52" rx="8" fill="#0f2035" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="590" y="643" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">Claude Desktop</text>
+  <text x="590" y="659" text-anchor="middle" fill="#94a3b8" font-size="9">MCP client</text>
+
+  <rect x="680" y="620" width="140" height="52" rx="8" fill="#0f2035" stroke="#f59e0b" stroke-width="1"/>
+  <text x="750" y="643" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="700">Other Clients</text>
+  <text x="750" y="659" text-anchor="middle" fill="#94a3b8" font-size="9">Cursor · Claude Code</text>
+
+  <line x1="180" y1="513" x2="150" y2="619" stroke="#e879f9" stroke-width="1.5" marker-end="url(#arr-pink)"/>
+  <text x="148" y="575" text-anchor="middle" fill="#e879f9" font-size="8.5">agentic loop</text>
+  <line x1="630" y1="513" x2="590" y2="619" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+  <line x1="710" y1="513" x2="750" y2="619" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+
+  <!-- Legend -->
+  <rect x="240" y="616" width="260" height="60" rx="6" fill="rgba(15,31,53,0.8)" stroke="#1e3a5f" stroke-width="1"/>
+  <text x="370" y="633" text-anchor="middle" fill="#64748b" font-size="9" font-weight="600" letter-spacing="1">LEGEND</text>
+  <line x1="255" y1="645" x2="285" y2="645" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="292" y="648" fill="#94a3b8" font-size="8.5">data write</text>
+  <line x1="355" y1="645" x2="385" y2="645" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="392" y="648" fill="#94a3b8" font-size="8.5">view query</text>
+  <line x1="255" y1="663" x2="285" y2="663" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="292" y="666" fill="#94a3b8" font-size="8.5">runtime create</text>
+  <line x1="355" y1="663" x2="385" y2="663" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="392" y="666" fill="#94a3b8" font-size="8.5">optional/future</text>
+
+  <defs>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arr-indigo" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#6366f1"/>
+    </marker>
+    <marker id="arr-violet" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#818cf8"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#34d399"/>
+    </marker>
+    <marker id="arr-amber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="arr-pink" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#e879f9"/>
+    </marker>
+  </defs>
+</svg>
