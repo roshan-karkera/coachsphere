@@ -130,7 +130,7 @@ div[class*="stBottom"] {
     background: radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%); pointer-events: none;
 }
 .hero-title { font-size: 1.7rem; font-weight: 800; background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0 0 6px 0; }
-.hero-sub { color: #475569; margin: 0; font-size: 0.9rem; }
+.hero-sub { color: #ffffff; margin: 0; font-size: 0.9rem; }
 
 /* ── MCP page ────────────────────────────────────────────── */
 .mcp-badge {
