@@ -278,20 +278,7 @@ code {
 }
 [data-testid="stCodeBlock"] span { opacity: 1 !important; }
 /* ── Metric Definitions formula block ────────────────────── */
-details pre {
-    color: #ffffff !important;
-    font-weight: 700 !important;
-    background: rgba(15,31,53,0.9) !important;
-    border: 1px solid rgba(56,189,248,0.3) !important;
-    border-radius: 6px !important;
-    padding: 12px 16px !important;
-    font-family: monospace !important;
-    font-size: 0.88rem !important;
-    font-weight: 500 !important;
-    white-space: pre-wrap !important;
-    overflow-x: auto !important;
-    margin: 0 0 12px !important;
-}
+details div[style*="monospace"] { color: #ffffff !important; font-weight: 700 !important; }
 /* ── Code block copy button ───────────────────────────────── */
 [data-testid="stCodeBlock"] button,
 [data-testid="stCodeCopyButton"],
@@ -866,10 +853,10 @@ elif page == "📋 Metric Definitions":
             </summary>
             <div style="padding:14px 18px;border-top:1px solid rgba(56,189,248,0.1)">
                 <p style="color:#94a3b8;font-size:0.85rem;margin:0 0 12px">{_html.escape(str(row['description']))}</p>
-                <pre style="background:rgba(15,31,53,0.9);border:1px solid rgba(56,189,248,0.3);
-                    border-radius:6px;padding:12px 16px;color:#ffffff;font-family:monospace;
+                <div style="background:rgba(15,31,53,0.9);border:1px solid rgba(56,189,248,0.3);
+                    border-radius:6px;padding:12px 16px;color:#ffffff !important;font-family:monospace;
                     font-size:0.92rem;overflow-x:auto;margin:0 0 12px;white-space:pre-wrap;
-                    font-weight:700;letter-spacing:0.01em">{formula_esc}</pre>
+                    font-weight:700;letter-spacing:0.01em;line-height:1.6">{formula_esc}</div>
                 <div style="display:flex;gap:24px;font-size:0.8rem">
                     <span><span style="color:#94a3b8;font-weight:600">Unit:</span>
                         <span style="color:#cbd5e1"> {_html.escape(str(row['unit']))}</span></span>
