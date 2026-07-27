@@ -541,7 +541,7 @@ if page == "📊 Overview":
                       labels={'period_month':'Month','effectiveness':'Score','team':'Team'},
                       markers=True)
         fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                          font_color='#94a3b8', legend_title_text='',
+                          font_color='#e2e8f0', legend_title_text='',
                           xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -562,7 +562,7 @@ if page == "📊 Overview":
                       labels={'pct':'Completion %','team':'Team'})
         fig2.update_traces(texttemplate='%{text}%', textposition='outside')
         fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#94a3b8', showlegend=False,
+                           font_color='#e2e8f0', showlegend=False,
                            xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155', range=[0,105]))
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -579,7 +579,7 @@ if page == "📊 Overview":
                        color_discrete_map=TEAM_COLORS,
                        labels={'quota_pct':'Quota Attainment %','period_month':'Month'})
         fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
+                           font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig3, use_container_width=True)
 
@@ -599,7 +599,7 @@ if page == "📊 Overview":
                           trendline='ols',
                           labels={'total_sessions':'Total Sessions','avg_win_rate':'Avg Win Rate %'})
         fig4.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
+                           font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig4, use_container_width=True)
 
@@ -624,7 +624,7 @@ elif page == "👥 Team Analytics":
                      barmode='group', color_discrete_map=TEAM_COLORS,
                      labels={'avg_effectiveness':'Effectiveness Score','period_month':'Month'})
         fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                          font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
+                          font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
                           yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -637,7 +637,7 @@ elif page == "👥 Team Analytics":
             texttemplate='%{text}', showscale=True,
             colorbar=dict(title='Score')
         ))
-        fig2.update_layout(paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8',
+        fig2.update_layout(paper_bgcolor='rgba(255,255,255,0)', font_color='#e2e8f0',
                            xaxis_title='Month', yaxis_title='Team')
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -688,7 +688,7 @@ elif page == "🧠 Skill Progression":
         fig = px.line(melted, x='period_month', y='Score', color='Skill', markers=True,
                       color_discrete_sequence=COLORS)
         fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                          font_color='#94a3b8', yaxis=dict(range=[1,5], gridcolor='#334155'),
+                          font_color='#e2e8f0', yaxis=dict(range=[1,5], gridcolor='#334155'),
                           xaxis=dict(gridcolor='#334155'), legend_title_text='')
         st.plotly_chart(fig, use_container_width=True)
 
@@ -705,7 +705,7 @@ elif page == "🧠 Skill Progression":
             fig2.update_layout(polar=dict(bgcolor='#0f172a',
                                           radialaxis=dict(range=[0,5], gridcolor='#334155'),
                                           angularaxis=dict(gridcolor='#334155')),
-                                paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8', showlegend=False)
+                                paper_bgcolor='rgba(255,255,255,0)', font_color='#e2e8f0', showlegend=False)
             st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown('<div class="section-title">Month-over-Month Skill Improvement</div>', unsafe_allow_html=True)
@@ -744,7 +744,7 @@ elif page == "📅 Session Insights":
         sc_cnt = sessions.groupby('scenario')['status'].count().reset_index(name='count')
         fig = px.pie(sc_cnt, names='scenario', values='count',
                      color_discrete_sequence=COLORS, hole=0.45)
-        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color='#94a3b8', legend_title_text='',
+        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color='#e2e8f0', legend_title_text='',
                           legend=dict(font=dict(color='#94a3b8')))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -755,7 +755,7 @@ elif page == "📅 Session Insights":
                       color_discrete_sequence=COLORS,
                       labels={'count':'Sessions','period_month':'Month'})
         fig2.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                           font_color='#94a3b8', xaxis=dict(gridcolor='#334155'),
+                           font_color='#e2e8f0', xaxis=dict(gridcolor='#334155'),
                            yaxis=dict(gridcolor='#334155'), legend_title_text='Status')
         st.plotly_chart(fig2, use_container_width=True)
 
@@ -767,7 +767,7 @@ elif page == "📅 Session Insights":
                   color='avg_duration', color_continuous_scale='Blues',
                   labels={'avg_duration':'Avg Duration (min)','scenario':'Scenario'})
     fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)',
-                       font_color='#94a3b8', coloraxis_showscale=False,
+                       font_color='#e2e8f0', coloraxis_showscale=False,
                        xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
     st.plotly_chart(fig3, use_container_width=True)
 
@@ -801,7 +801,7 @@ elif page == "🔍 Rep Deep Dive":
         st.markdown('<div class="section-title">Coaching Effectiveness Trend</div>', unsafe_allow_html=True)
         fig = px.line(eff, x='period_month', y='coaching_effectiveness_score',
                       markers=True, color_discrete_sequence=['#38bdf8'])
-        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8',
+        fig.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#e2e8f0',
                           xaxis=dict(gridcolor='#334155'), yaxis=dict(gridcolor='#334155'))
         st.plotly_chart(fig, use_container_width=True)
 
@@ -819,7 +819,7 @@ elif page == "🔍 Rep Deep Dive":
             fig2.update_layout(polar=dict(bgcolor='#0f172a',
                                           radialaxis=dict(range=[0,5], gridcolor='#334155'),
                                           angularaxis=dict(gridcolor='#334155')),
-                                paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8', showlegend=False)
+                                paper_bgcolor='rgba(255,255,255,0)', font_color='#e2e8f0', showlegend=False)
             st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown('<div class="section-title">Business Metrics Over Time</div>', unsafe_allow_html=True)
@@ -828,7 +828,7 @@ elif page == "🔍 Rep Deep Dive":
                           marker_color='#38bdf8'), secondary_y=False)
     fig3.add_trace(go.Scatter(x=bi['period_month'], y=bi['win_rate']*100, name='Win Rate %',
                               mode='lines+markers', line=dict(color='#f472b6')), secondary_y=True)
-    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#94a3b8',
+    fig3.update_layout(plot_bgcolor='#0f172a', paper_bgcolor='rgba(255,255,255,0)', font_color='#e2e8f0',
                        xaxis=dict(gridcolor='#334155'), legend_title_text='')
     fig3.update_yaxes(gridcolor='#334155', secondary_y=False, title_text='Deals Closed')
     fig3.update_yaxes(gridcolor='#334155', secondary_y=True,  title_text='Win Rate %')
