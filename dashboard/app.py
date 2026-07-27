@@ -13,10 +13,14 @@ from plotly.subplots import make_subplots
 
 # ── Global Plotly theme — white text on dark background ────────────────────────
 pio.templates["coachsphere"] = pio.templates["plotly_dark"]
-pio.templates["coachsphere"].layout.font = dict(color="#e2e8f0", family="Inter, sans-serif")
-pio.templates["coachsphere"].layout.legend = dict(font=dict(color="#e2e8f0"))
-pio.templates["coachsphere"].layout.xaxis = dict(tickfont=dict(color="#e2e8f0"), titlefont=dict(color="#e2e8f0"))
-pio.templates["coachsphere"].layout.yaxis = dict(tickfont=dict(color="#e2e8f0"), titlefont=dict(color="#e2e8f0"))
+_t = pio.templates["coachsphere"].layout
+_t.font.color  = "#e2e8f0"
+_t.font.family = "Inter, sans-serif"
+_t.legend.font.color = "#e2e8f0"
+_t.xaxis.tickfont.color  = "#e2e8f0"
+_t.xaxis.title.font.color = "#e2e8f0"
+_t.yaxis.tickfont.color  = "#e2e8f0"
+_t.yaxis.title.font.color = "#e2e8f0"
 pio.templates.default = "coachsphere"
 import streamlit as st
 
