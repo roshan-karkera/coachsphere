@@ -66,22 +66,6 @@ st.set_page_config(
 # ── Dark theme overrides ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* ── Force sidebar always open on mobile ─────────────────── */
-@media (max-width: 768px) {
-    [data-testid="stSidebar"] {
-        transform: translateX(0) !important;
-        min-width: 200px !important;
-        width: 200px !important;
-        visibility: visible !important;
-        display: block !important;
-    }
-    [data-testid="stSidebar"] > div {
-        width: 200px !important;
-    }
-    [data-testid="collapsedControl"] {
-        display: none !important;
-    }
-}
 /* ── Full dark theme ─────────────────────────────────────── */
 
 [data-testid="stAppViewContainer"],
