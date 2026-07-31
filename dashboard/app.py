@@ -66,20 +66,21 @@ st.set_page_config(
 # ── Dark theme overrides ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* ── Force sidebar toggle visible on mobile ──────────────── */
-[data-testid="collapsedControl"] {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    position: fixed !important;
-    top: 0.4rem !important;
-    left: 0.4rem !important;
-    z-index: 9999999 !important;
-    background: #1e293b !important;
-    border-radius: 8px !important;
-    padding: 6px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+/* ── Force sidebar always open on mobile ─────────────────── */
+@media (max-width: 768px) {
+    [data-testid="stSidebar"] {
+        transform: translateX(0) !important;
+        min-width: 200px !important;
+        width: 200px !important;
+        visibility: visible !important;
+        display: block !important;
+    }
+    [data-testid="stSidebar"] > div {
+        width: 200px !important;
+    }
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
 }
 /* ── Full dark theme ─────────────────────────────────────── */
 
@@ -393,16 +394,6 @@ footer,#MainMenu { visibility: hidden; }
 div[class*="viewerBadge"],.stDeployButton { display: none !important; }
 [data-testid="collapsedControl"] { display: flex !important; visibility: visible !important; }
 </style>
-<script>
-// Force sidebar open on mobile after Streamlit renders
-function openSidebar() {
-    var btn = window.parent.document.querySelector('[data-testid="collapsedControl"] button');
-    if (btn) { btn.click(); }
-}
-if (window.innerWidth <= 768) {
-    setTimeout(openSidebar, 800);
-}
-</script>
 """, unsafe_allow_html=True)
 
 COLORS = ['#38bdf8','#818cf8','#34d399','#f472b6','#fb923c']
@@ -491,22 +482,6 @@ with st.sidebar:
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
-# ── Mobile sidebar fix (JS injection via component) ───────────────────────────
-import streamlit.components.v1 as components
-components.html("""
-<script>
-function fixSidebarBtn() {
-    try {
-        var btn = window.parent.document.querySelector('[data-testid="collapsedControl"] button');
-        if (btn) {
-            btn.style.cssText = 'display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:fixed!important;top:6px!important;left:6px!important;z-index:9999999!important;background:#1e293b!important;border-radius:8px!important;padding:6px!important;box-shadow:0 2px 8px rgba(0,0,0,0.6)!important;';
-        }
-    } catch(e) {}
-}
-setInterval(fixSidebarBtn, 300);
-fixSidebarBtn();
-</script>
-""", height=0)
 
 team_filter = "','".join(sel_teams) if sel_teams else "''"
 
