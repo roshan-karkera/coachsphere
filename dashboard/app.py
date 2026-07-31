@@ -456,23 +456,11 @@ def dark_table(df):
     </div>"""
     st.markdown(html, unsafe_allow_html=True)
 
-# ── Navigation (top of page — works on mobile and desktop) ───────────────────
-NAV_OPTIONS = [
-    "📊 Overview",
-    "👥 Team Analytics",
-    "🧠 Skill Progression",
-    "📅 Session Insights",
-    "🔍 Rep Deep Dive",
-    "📋 Metric Definitions",
-    "🤖 AI Assistant",
-    "🔌 MCP Server",
-]
-
-col_logo, col_nav = st.columns([1, 4])
-with col_logo:
+# ── Sidebar ───────────────────────────────────────────────────────────────────
+with st.sidebar:
     st.markdown("""
-    <div style="display:flex;align-items:center;gap:8px;padding-top:6px;">
-        <svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <svg width="90" height="90" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
             <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
             <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
@@ -482,23 +470,43 @@ with col_logo:
             <circle cx="22" cy="16" r="2" fill="white"/>
             <circle cx="31" cy="10" r="2" fill="white"/>
         </svg>
-        <span style="color:#38bdf8;font-weight:700;font-size:1rem;">CoachSphere</span>
     </div>
     """, unsafe_allow_html=True)
-with col_nav:
-    page = st.selectbox("Navigate", NAV_OPTIONS, label_visibility="collapsed")
-
-st.divider()
-
-# ── Sidebar (filters only) ────────────────────────────────────────────────────
-with st.sidebar:
     st.markdown("## CoachSphere")
     st.markdown("*AI Sales Coaching Analytics*")
+    st.divider()
+    page = st.radio("Navigation", [
+        "📊 Overview",
+        "👥 Team Analytics",
+        "🧠 Skill Progression",
+        "📅 Session Insights",
+        "🔍 Rep Deep Dive",
+        "📋 Metric Definitions",
+        "🤖 AI Assistant",
+        "🔌 MCP Server",
+    ])
     st.divider()
     teams_all = query("SELECT DISTINCT team FROM users WHERE role != 'Team Lead'")['team'].tolist()
     sel_teams = st.multiselect("Filter by Team", teams_all, default=teams_all)
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
+
+# ── Mobile sidebar fix (JS injection via component) ───────────────────────────
+import streamlit.components.v1 as components
+components.html("""
+<script>
+function fixSidebarBtn() {
+    try {
+        var btn = window.parent.document.querySelector('[data-testid="collapsedControl"] button');
+        if (btn) {
+            btn.style.cssText = 'display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:fixed!important;top:6px!important;left:6px!important;z-index:9999999!important;background:#1e293b!important;border-radius:8px!important;padding:6px!important;box-shadow:0 2px 8px rgba(0,0,0,0.6)!important;';
+        }
+    } catch(e) {}
+}
+setInterval(fixSidebarBtn, 300);
+fixSidebarBtn();
+</script>
+""", height=0)
 
 team_filter = "','".join(sel_teams) if sel_teams else "''"
 
