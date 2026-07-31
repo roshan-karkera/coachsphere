@@ -66,6 +66,24 @@ st.set_page_config(
 # ── Dark theme overrides ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
+/* ── Force sidebar toggle visible on mobile ──────────────── */
+[data-testid="collapsedControl"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+@media (max-width: 768px) {
+    [data-testid="collapsedControl"] {
+        position: fixed !important;
+        top: 0.5rem !important;
+        left: 0.5rem !important;
+        z-index: 999999 !important;
+        background: #1e293b !important;
+        border-radius: 8px !important;
+        padding: 4px !important;
+    }
+}
 /* ── Full dark theme ─────────────────────────────────────── */
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"],
