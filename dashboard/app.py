@@ -99,7 +99,15 @@ div[class*="stBottom"] {
 /* Nuke any remaining white at the very bottom */
 .main > div:last-child { background: #070d1a !important; }
 
-/* ── Lock sidebar open — hide collapse button ────────────── */
+/* ── Force sidebar always visible ────────────────────────── */
+[data-testid="stSidebar"] {
+    display: block !important;
+    visibility: visible !important;
+    transform: none !important;
+    min-width: 244px !important;
+    width: 244px !important;
+    position: relative !important;
+}
 [data-testid="stSidebarCollapseButton"] { display: none !important; }
 [data-testid="collapsedControl"] { display: none !important; }
 
