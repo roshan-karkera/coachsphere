@@ -63,9 +63,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Clear cache on every fresh load
-st.cache_data.clear()
-st.cache_resource.clear()
+# Clear cache once per browser session (not on every rerun)
+if 'cache_cleared' not in st.session_state:
+    st.cache_data.clear()
+    st.cache_resource.clear()
+    st.session_state['cache_cleared'] = True
 
 # ── Dark theme overrides ──────────────────────────────────────────────────────
 st.markdown("""
