@@ -99,16 +99,9 @@ div[class*="stBottom"] {
 /* Nuke any remaining white at the very bottom */
 .main > div:last-child { background: #070d1a !important; }
 
-/* ── Sidebar toggle button — keep it visible ─────────────── */
-[data-testid="collapsedControl"] {
-    background: #0a1628 !important;
-    border: 1px solid rgba(56,189,248,0.3) !important;
-    border-radius: 0 8px 8px 0 !important;
-    color: #38bdf8 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-[data-testid="collapsedControl"] svg { fill: #38bdf8 !important; stroke: #38bdf8 !important; }
+/* ── Lock sidebar open — hide collapse button ────────────── */
+[data-testid="stSidebarCollapseButton"] { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
 
 /* ── Metric cards ────────────────────────────────────────── */
 .metric-card {
