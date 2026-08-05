@@ -100,14 +100,7 @@ div[class*="stBottom"] {
 .main > div:last-child { background: #070d1a !important; }
 
 /* ── Force sidebar always visible ────────────────────────── */
-[data-testid="stSidebar"] {
-    display: block !important;
-    visibility: visible !important;
-    transform: none !important;
-    min-width: 244px !important;
-    width: 244px !important;
-    position: relative !important;
-}
+[data-testid="stSidebar"] { transform: none !important; }
 [data-testid="stSidebarCollapseButton"] { display: none !important; }
 [data-testid="collapsedControl"] { display: none !important; }
 
