@@ -63,6 +63,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Clear cache on every fresh load
+st.cache_data.clear()
+st.cache_resource.clear()
+
 # ── Dark theme overrides ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -99,9 +103,18 @@ div[class*="stBottom"] {
 /* Nuke any remaining white at the very bottom */
 .main > div:last-child { background: #070d1a !important; }
 
-/* ── Force sidebar always visible ────────────────────────── */
-[data-testid="stSidebar"] { transform: none !important; }
-[data-testid="stSidebarCollapseButton"] { display: none !important; }
+/* ── Force sidebar always visible & wider ────────────────── */
+section[data-testid="stSidebar"],
+[data-testid="stSidebar"] {
+    transform: none !important;
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+}
+[data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"] { display: none !important; }
 
 /* ── Metric cards ────────────────────────────────────────── */
