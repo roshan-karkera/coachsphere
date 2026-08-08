@@ -641,20 +641,19 @@ if 'manager' not in st.session_state:
 
 _mgr = st.session_state['manager']
 
-# ── Manager badge injected into header area (top-right) ───────────────────────
-_tc = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
-_ini = ''.join(p[0] for p in _mgr['name'].split()[:2])
-st.markdown(
-    f'<div class="manager-badge">'
-    f'<div style="width:32px;height:32px;border-radius:50%;background:{_tc};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#0a1628;">{_ini}</div>'
-    f'<div><div style="color:#e2e8f0;font-size:0.82rem;font-weight:700;line-height:1.2;">{_mgr["name"]}</div>'
-    f'<div style="color:{_tc};font-size:0.7rem;font-weight:600;">{_mgr["team"]} Team</div></div>'
-    f'</div>',
-    unsafe_allow_html=True
-)
-
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
+    # Manager badge — fixed top-right in header (inside sidebar so position:fixed hits viewport)
+    _tc = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
+    _ini = ''.join(p[0] for p in _mgr['name'].split()[:2])
+    st.markdown(
+        f'<div class="manager-badge">'
+        f'<div style="width:32px;height:32px;border-radius:50%;background:{_tc};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#0a1628;flex-shrink:0;">{_ini}</div>'
+        f'<div><div style="color:#e2e8f0;font-size:0.82rem;font-weight:700;line-height:1.2;">{_mgr["name"]}</div>'
+        f'<div style="color:{_tc};font-size:0.7rem;font-weight:600;">{_mgr["team"]} Team</div></div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
     st.markdown("""
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
         <svg width="90" height="90" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
