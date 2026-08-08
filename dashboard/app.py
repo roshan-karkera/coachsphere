@@ -633,11 +633,17 @@ with st.sidebar:
         "🔌 MCP Server",
     ])
     st.divider()
-    # Manager info card
+    sel_teams = [_mgr['team']]
+    months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
+    sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
+
+    st.markdown("<div style='flex:1'></div>", unsafe_allow_html=True)
+    st.divider()
+    # Manager info card — pinned at bottom
     team_color = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
     initials = ''.join(p[0] for p in _mgr['name'].split()[:2])
     st.markdown(f"""
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 0 6px 0;">
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0 6px 0;">
         <div style="width:42px;height:42px;border-radius:50%;background:{team_color};
                     display:flex;align-items:center;justify-content:center;
                     font-weight:800;font-size:1.1rem;color:#0a1628;flex-shrink:0;">{initials}</div>
@@ -650,11 +656,6 @@ with st.sidebar:
     if st.button("Sign Out", use_container_width=True):
         del st.session_state['manager']
         st.rerun()
-    st.divider()
-
-    sel_teams = [_mgr['team']]
-    months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
-    sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
 
 team_filter = "','".join(sel_teams) if sel_teams else "''"
