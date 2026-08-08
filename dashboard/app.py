@@ -485,7 +485,7 @@ if 'manager' not in st.session_state:
 
     # ── LEFT: login form ───────────────────────────────────────────────────────
     with col_left:
-        st.markdown("<div style='height:18vh'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:8vh'></div>", unsafe_allow_html=True)
         st.markdown("""
         <div style="margin-bottom:28px;">
             <div style="font-size:1.15rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;">Manager Sign In</div>
@@ -547,7 +547,7 @@ if 'manager' not in st.session_state:
     svg_plug  = _svg_b64('plug-svgrepo-com.svg')
 
     _right_html = (
-        '<div style="display:flex;flex-direction:column;justify-content:center;min-height:88vh;padding:0 0 0 40px;">'
+        '<div style="display:flex;flex-direction:column;justify-content:center;min-height:88vh;padding:0 0 0 40px;margin-top:-8vh;">'
         '<svg width="120" height="120" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">'
         '<circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>'
         '<rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>'
