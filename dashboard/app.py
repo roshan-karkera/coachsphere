@@ -107,9 +107,47 @@ header[data-testid="stHeader"] {
     background: rgba(10,22,40,0.9) !important;
     border: 1px solid rgba(56,189,248,0.15) !important;
     border-radius: 10px !important;
-    padding: 6px 14px 6px 8px !important;
+    padding: 6px 12px 6px 8px !important;
     backdrop-filter: blur(8px) !important;
 }
+.signout-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 7px !important;
+    border: 1px solid rgba(239,68,68,0.25) !important;
+    background: rgba(239,68,68,0.06) !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    position: relative !important;
+    transition: background 0.2s, border-color 0.2s !important;
+}
+.signout-btn:hover {
+    background: rgba(239,68,68,0.18) !important;
+    border-color: rgba(239,68,68,0.5) !important;
+}
+.signout-btn img { filter: invert(40%) sepia(80%) saturate(600%) hue-rotate(320deg) brightness(110%); width:17px; height:17px; }
+.signout-btn:hover img { filter: invert(30%) sepia(90%) saturate(700%) hue-rotate(320deg) brightness(120%); }
+.signout-btn::after {
+    content: "Sign Out" !important;
+    position: absolute !important;
+    bottom: -32px !important;
+    right: 0 !important;
+    background: rgba(15,31,53,0.95) !important;
+    color: #fca5a5 !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(239,68,68,0.3) !important;
+    white-space: nowrap !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.15s !important;
+}
+.signout-btn:hover::after { opacity: 1 !important; }
 [data-testid="stBottom"],
 [data-testid="stBottom"] > div,
 [data-testid="stBottom"] > div > div,
@@ -643,14 +681,17 @@ _mgr = st.session_state['manager']
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    # Manager badge — fixed top-right in header (inside sidebar so position:fixed hits viewport)
-    _tc = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
+    # Manager badge — fixed top-right in header
+    _tc  = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
     _ini = ''.join(p[0] for p in _mgr['name'].split()[:2])
+    _logout_path = Path(__file__).parent / 'logout-svgrepo-com.svg'
+    _logout_b64  = base64.b64encode(_logout_path.read_bytes()).decode() if _logout_path.exists() else ''
     st.markdown(
         f'<div class="manager-badge">'
         f'<div style="width:32px;height:32px;border-radius:50%;background:{_tc};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#0a1628;flex-shrink:0;">{_ini}</div>'
         f'<div><div style="color:#e2e8f0;font-size:0.82rem;font-weight:700;line-height:1.2;">{_mgr["name"]}</div>'
         f'<div style="color:{_tc};font-size:0.7rem;font-weight:600;">{_mgr["team"]} Team</div></div>'
+        f'<a href="/" class="signout-btn"><img src="data:image/svg+xml;base64,{_logout_b64}"></a>'
         f'</div>',
         unsafe_allow_html=True
     )
@@ -686,11 +727,6 @@ with st.sidebar:
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
-    # Sign Out — pinned at bottom
-    st.markdown('<div class="sidebar-bottom"></div>', unsafe_allow_html=True)
-    if st.button("Sign Out", use_container_width=True, key="signout_btn"):
-        del st.session_state['manager']
-        st.rerun()
 
 
 team_filter = "','".join(sel_teams) if sel_teams else "''"
