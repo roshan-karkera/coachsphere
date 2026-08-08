@@ -128,8 +128,8 @@ header[data-testid="stHeader"] {
     background: rgba(239,68,68,0.18) !important;
     border-color: rgba(239,68,68,0.5) !important;
 }
-.signout-btn img { filter: brightness(0) invert(1); width:17px; height:17px; opacity:0.7; }
-.signout-btn:hover img { filter: brightness(0) invert(1); opacity:1; }
+.signout-btn svg { opacity: 0.75; transition: opacity 0.15s; }
+.signout-btn:hover svg { opacity: 1; }
 .signout-btn::after {
     content: "Sign Out" !important;
     position: absolute !important;
@@ -684,14 +684,20 @@ with st.sidebar:
     # Manager badge — fixed top-right in header
     _tc  = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
     _ini = ''.join(p[0] for p in _mgr['name'].split()[:2])
-    _logout_path = Path(__file__).parent / 'logout-svgrepo-com.svg'
-    _logout_b64  = base64.b64encode(_logout_path.read_bytes()).decode() if _logout_path.exists() else ''
+    _logout_svg = (
+        '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
+        '<path d="M13 2C10.24 2 8 4.24 8 7c0 .55.45 1 1 1s1-.45 1-1c0-1.66 1.34-3 3-3h4c1.66 0 3 1.34 3 3v10c0 1.66-1.34 3-3 3h-4c-1.66 0-3-1.34-3-3 0-.55-.45-1-1-1s-1 .45-1 1c0 2.76 2.24 5 5 5h4c2.76 0 5-2.24 5-5V7c0-2.76-2.24-5-5-5h-4z" fill="#38bdf8"/>'
+        '<path d="M14 11c.55 0 1 .45 1 1s-.45 1-1 1V11z" fill="#38bdf8"/>'
+        '<path d="M5.72 11H14v2H5.72c-.1.11-.19.22-.27.32-.25.31-.43.58-.57.78-.07.1-.13.18-.17.23l-.05.06L4.63 14.41c-.32.45-.22 1.08.23 1.4.45.33 1.08.23 1.4-.22l.01-.01.01-.01.04-.06.04-.05c.04-.05.1-.13.17-.22.14-.18.34-.44.57-.73.24-.3.5-.62.72-.91V11z" fill="#38bdf8"/>'
+        '<path d="M2.79 11.29C3.34 10.75 3.93 10.04 4.41 9.44 4.64 9.15 4.84 8.89 4.98 8.7c.07-.09.13-.17.17-.23l.04-.06.01-.01.01-.01C5.51 7.94 5.41 7.31 4.96 6.99 4.51 6.66 3.89 6.77 3.56 7.22L3.55 7.23 3.54 7.24l-.04.06-.04.06c-.04.05-.1.13-.17.22-.14.19-.34.44-.57.74-.47.59-1.07 1.3-1.61 1.85L.41 11l.7.71c.54.54 1.14 1.26 1.61 1.85.23.3.43.55.57.73.07.09.13.17.17.22l.04.05.04.06.01.01c.32.45.96.55 1.4.23.45-.33.55-.96.23-1.41l-.81.59.81-.59-.01-.01-.04-.06c-.04-.05-.1-.13-.17-.23-.14-.18-.34-.44-.57-.73-.08-.1-.17-.2-.27-.32z" fill="#38bdf8"/>'
+        '</svg>'
+    )
     st.markdown(
         f'<div class="manager-badge">'
         f'<div style="width:32px;height:32px;border-radius:50%;background:{_tc};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#0a1628;flex-shrink:0;">{_ini}</div>'
         f'<div><div style="color:#e2e8f0;font-size:0.82rem;font-weight:700;line-height:1.2;">{_mgr["name"]}</div>'
         f'<div style="color:{_tc};font-size:0.7rem;font-weight:600;">{_mgr["team"]} Team</div></div>'
-        f'<a href="/" class="signout-btn"><img src="data:image/svg+xml;base64,{_logout_b64}"></a>'
+        f'<a href="/" class="signout-btn">{_logout_svg}</a>'
         f'</div>',
         unsafe_allow_html=True
     )
