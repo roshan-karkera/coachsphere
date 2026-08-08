@@ -463,38 +463,43 @@ MANAGERS = {
 if 'manager' not in st.session_state:
     st.markdown("""
     <style>
-    /* Center login card */
-    [data-testid="stMain"] > div { display:flex; align-items:center; justify-content:center; min-height:90vh; }
-    [data-testid="stVerticalBlock"] > div:first-child { width:100%; max-width:420px; margin:auto; }
+    /* Shrink Streamlit text inputs */
+    div[data-testid="stTextInput"] input {
+        font-size: 0.82rem !important;
+        padding: 6px 10px !important;
+        height: 34px !important;
+        background: rgba(15,31,53,0.8) !important;
+        border: 1px solid rgba(56,189,248,0.25) !important;
+        border-radius: 6px !important;
+        color: #e2e8f0 !important;
+    }
+    div[data-testid="stTextInput"] input:focus {
+        border-color: rgba(56,189,248,0.6) !important;
+        box-shadow: 0 0 0 2px rgba(56,189,248,0.1) !important;
+    }
+    div[data-testid="stTextInput"] > label { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    col_l, col_c, col_r = st.columns([1, 2, 1])
-    with col_c:
+    col_left, col_div, col_right = st.columns([5, 1, 6])
+
+    # ── LEFT: login form ───────────────────────────────────────────────────────
+    with col_left:
+        st.markdown("<div style='height:18vh'></div>", unsafe_allow_html=True)
         st.markdown("""
-        <div style="text-align:center;margin-bottom:28px;">
-            <svg width="64" height="64" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
-                <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
-                <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
-                <rect x="28" y="16" width="6" height="22" rx="1.5" fill="white"/>
-                <polyline points="13,22 22,16 31,10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                <circle cx="13" cy="22" r="2" fill="white"/>
-                <circle cx="22" cy="16" r="2" fill="white"/>
-                <circle cx="31" cy="10" r="2" fill="white"/>
-            </svg>
-            <div style="font-size:1.9rem;font-weight:800;color:#e2e8f0;margin-top:10px;letter-spacing:-0.02em;">CoachSphere</div>
-            <div style="color:#64748b;font-size:0.9rem;margin-top:4px;">Manager Portal · AI Sales Coaching Analytics</div>
+        <div style="margin-bottom:28px;">
+            <div style="font-size:1.15rem;font-weight:700;color:#e2e8f0;margin-bottom:4px;">Manager Sign In</div>
+            <div style="color:#475569;font-size:0.8rem;">Access your team's analytics dashboard</div>
         </div>
         """, unsafe_allow_html=True)
 
         with st.form("login_form"):
-            st.markdown('<div style="color:#94a3b8;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;margin-bottom:4px;">USERNAME</div>', unsafe_allow_html=True)
-            username = st.text_input("", placeholder="e.g. james.howard", label_visibility="collapsed")
-            st.markdown('<div style="color:#94a3b8;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;margin-bottom:4px;margin-top:12px;">PASSWORD</div>', unsafe_allow_html=True)
-            password = st.text_input("", type="password", placeholder="••••••••••••", label_visibility="collapsed")
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-            submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
+            st.markdown('<div style="color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;margin-bottom:3px;">USERNAME</div>', unsafe_allow_html=True)
+            username = st.text_input("u", placeholder="e.g. james.howard", label_visibility="collapsed")
+            st.markdown('<div style="color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;margin-bottom:3px;margin-top:10px;">PASSWORD</div>', unsafe_allow_html=True)
+            password = st.text_input("p", type="password", placeholder="••••••••••••", label_visibility="collapsed")
+            st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
 
         if submitted:
             key = username.strip().lower()
@@ -504,21 +509,69 @@ if 'manager' not in st.session_state:
                 st.rerun()
             else:
                 st.markdown("""
-                <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
-                            border-radius:8px;padding:10px 14px;color:#fca5a5;font-size:0.85rem;margin-top:8px;text-align:center;">
+                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);
+                            border-radius:6px;padding:8px 12px;color:#fca5a5;font-size:0.8rem;margin-top:6px;">
                     Invalid username or password
                 </div>""", unsafe_allow_html=True)
 
         st.markdown("""
-        <div style="margin-top:24px;padding:14px;background:rgba(15,31,53,0.6);border-radius:10px;
-                    border:1px solid rgba(56,189,248,0.1);">
-            <div style="color:#475569;font-size:0.75rem;font-weight:600;text-transform:uppercase;
-                        letter-spacing:0.08em;margin-bottom:10px;">Manager Accounts</div>
-            <div style="display:grid;gap:6px;">
-                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#38bdf8;font-weight:600;">james.howard</span> · Enterprise</div>
-                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#818cf8;font-weight:600;">lorraine.todd</span> · SMB</div>
-                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#34d399;font-weight:600;">amy.stewart</span> · EMEA</div>
-                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#f472b6;font-weight:600;">lisa.barnes</span> · APAC</div>
+        <div style="margin-top:20px;padding:12px 14px;background:rgba(15,31,53,0.5);border-radius:8px;
+                    border:1px solid rgba(56,189,248,0.08);">
+            <div style="color:#334155;font-size:0.7rem;font-weight:600;text-transform:uppercase;
+                        letter-spacing:0.08em;margin-bottom:8px;">Team Accounts</div>
+            <div style="display:grid;gap:5px;">
+                <div style="font-size:0.75rem;color:#475569;"><span style="color:#38bdf8;font-weight:600;">james.howard</span> &nbsp;·&nbsp; Enterprise</div>
+                <div style="font-size:0.75rem;color:#475569;"><span style="color:#818cf8;font-weight:600;">lorraine.todd</span> &nbsp;·&nbsp; SMB</div>
+                <div style="font-size:0.75rem;color:#475569;"><span style="color:#34d399;font-weight:600;">amy.stewart</span> &nbsp;·&nbsp; EMEA</div>
+                <div style="font-size:0.75rem;color:#475569;"><span style="color:#f472b6;font-weight:600;">lisa.barnes</span> &nbsp;·&nbsp; APAC</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ── DIVIDER ────────────────────────────────────────────────────────────────
+    with col_div:
+        st.markdown("<div style='height:20vh'></div>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style="width:1px;background:linear-gradient(to bottom,transparent,rgba(56,189,248,0.2),transparent);
+                    height:340px;margin:auto;"></div>
+        """, unsafe_allow_html=True)
+
+    # ── RIGHT: branding ────────────────────────────────────────────────────────
+    with col_right:
+        st.markdown("<div style='height:14vh'></div>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style="padding-left:32px;">
+            <svg width="88" height="88" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
+                <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
+                <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
+                <rect x="28" y="16" width="6" height="22" rx="1.5" fill="white"/>
+                <polyline points="13,22 22,16 31,10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                <circle cx="13" cy="22" r="2" fill="white"/>
+                <circle cx="22" cy="16" r="2" fill="white"/>
+                <circle cx="31" cy="10" r="2" fill="white"/>
+            </svg>
+            <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.03em;margin-top:16px;
+                        background:linear-gradient(135deg,#e2e8f0 0%,#94a3b8 100%);
+                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                        background-clip:text;line-height:1.1;">Coach<br>Sphere</div>
+            <div style="color:#475569;font-size:1rem;margin-top:14px;line-height:1.6;max-width:280px;">
+                AI-powered sales coaching<br>analytics for team managers.<br>
+                <span style="color:#38bdf8;">Track · Coach · Improve.</span>
+            </div>
+            <div style="margin-top:28px;display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+                    <span style="color:#38bdf8;font-size:1rem;">📊</span> Real-time KPI dashboards
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+                    <span style="color:#818cf8;font-size:1rem;">🧠</span> Skill progression tracking
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+                    <span style="color:#34d399;font-size:1rem;">🤖</span> AI coaching assistant
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+                    <span style="color:#f472b6;font-size:1rem;">🔌</span> MCP natural language queries
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
