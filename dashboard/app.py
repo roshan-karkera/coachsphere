@@ -63,6 +63,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ── Sign-out via query param ──────────────────────────────────────────────────
+if st.query_params.get("signout"):
+    st.query_params.clear()
+    if "manager" in st.session_state:
+        del st.session_state["manager"]
+    st.rerun()
+
 # Clear cache once per browser session (not on every rerun)
 if 'cache_cleared' not in st.session_state:
     st.cache_data.clear()
@@ -697,7 +704,7 @@ with st.sidebar:
         f'<div style="width:32px;height:32px;border-radius:50%;background:{_tc};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#0a1628;flex-shrink:0;">{_ini}</div>'
         f'<div><div style="color:#e2e8f0;font-size:0.82rem;font-weight:700;line-height:1.2;">{_mgr["name"]}</div>'
         f'<div style="color:{_tc};font-size:0.7rem;font-weight:600;">{_mgr["team"]} Team</div></div>'
-        f'<a href="/" class="signout-btn">{_logout_svg}</a>'
+        f'<a href="/?signout=1" target="_self" class="signout-btn">{_logout_svg}</a>'
         f'</div>',
         unsafe_allow_html=True
     )
