@@ -546,93 +546,58 @@ if 'manager' not in st.session_state:
     svg_robot = _svg_b64('robot-svgrepo-com.svg')
     svg_plug  = _svg_b64('plug-svgrepo-com.svg')
 
+    _right_html = (
+        '<div style="display:flex;flex-direction:column;justify-content:center;min-height:88vh;padding:0 0 0 40px;">'
+        '<svg width="120" height="120" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">'
+        '<circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>'
+        '<rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>'
+        '<rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>'
+        '<rect x="28" y="16" width="6" height="22" rx="1.5" fill="white"/>'
+        '<polyline points="13,22 22,16 31,10" stroke="white" stroke-width="2.8" stroke-linecap="round" fill="none"/>'
+        '<circle cx="13" cy="22" r="2.4" fill="white"/>'
+        '<circle cx="22" cy="16" r="2.4" fill="white"/>'
+        '<circle cx="31" cy="10" r="2.4" fill="white"/>'
+        '</svg>'
+        '<div style="font-size:3.6rem;font-weight:900;letter-spacing:-0.04em;margin-top:20px;'
+        'background:linear-gradient(135deg,#e2e8f0 0%,#94a3b8 100%);'
+        '-webkit-background-clip:text;-webkit-text-fill-color:transparent;'
+        'background-clip:text;line-height:1.05;">CoachSphere</div>'
+        '<div style="margin-top:14px;font-size:1.1rem;color:#475569;line-height:1.7;">AI-powered sales coaching analytics for team managers.</div>'
+        '<div style="margin-top:6px;font-size:1.05rem;font-weight:600;'
+        'background:linear-gradient(90deg,#38bdf8,#818cf8);'
+        '-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">'
+        'Track &nbsp;&middot;&nbsp; Coach &nbsp;&middot;&nbsp; Improve.</div>'
+        '<div style="margin:28px 0;width:60px;height:3px;border-radius:2px;background:linear-gradient(90deg,#38bdf8,#818cf8);"></div>'
+        '<div style="display:flex;flex-direction:column;gap:20px;">'
+
+        '<div style="display:flex;align-items:center;gap:16px;">'
+        f'<div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;base64,{svg_graph}" style="width:30px;height:30px;"></div>'
+        '<div><div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">Real-time KPI Dashboards</div>'
+        '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Live metrics across all team reps</div></div>'
+        '</div>'
+
+        '<div style="display:flex;align-items:center;gap:16px;">'
+        f'<div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;base64,{svg_brain}" style="width:30px;height:30px;"></div>'
+        '<div><div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">Skill Progression Tracking</div>'
+        '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Monitor coaching impact over time</div></div>'
+        '</div>'
+
+        '<div style="display:flex;align-items:center;gap:16px;">'
+        f'<div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;base64,{svg_robot}" style="width:30px;height:30px;"></div>'
+        '<div><div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">AI Coaching Assistant</div>'
+        '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Ask anything about your team\'s performance</div></div>'
+        '</div>'
+
+        '<div style="display:flex;align-items:center;gap:16px;">'
+        f'<div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;base64,{svg_plug}" style="width:30px;height:30px;"></div>'
+        '<div><div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">MCP Natural Language Queries</div>'
+        '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Query analytics from Claude Desktop</div></div>'
+        '</div>'
+
+        '</div></div>'
+    )
     with col_right:
-        st.markdown(f"""
-        <div style="display:flex;flex-direction:column;justify-content:center;
-                    min-height:88vh;padding:0 0 0 40px;">
-
-            <!-- Logo -->
-            <svg width="120" height="120" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
-                <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
-                <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
-                <rect x="28" y="16" width="6" height="22" rx="1.5" fill="white"/>
-                <polyline points="13,22 22,16 31,10" stroke="white" stroke-width="2.8" stroke-linecap="round" fill="none"/>
-                <circle cx="13" cy="22" r="2.4" fill="white"/>
-                <circle cx="22" cy="16" r="2.4" fill="white"/>
-                <circle cx="31" cy="10" r="2.4" fill="white"/>
-            </svg>
-
-            <!-- Title -->
-            <div style="font-size:3.6rem;font-weight:900;letter-spacing:-0.04em;margin-top:20px;
-                        background:linear-gradient(135deg,#e2e8f0 0%,#94a3b8 100%);
-                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-                        background-clip:text;line-height:1.05;">CoachSphere</div>
-
-            <!-- Tagline -->
-            <div style="margin-top:14px;font-size:1.1rem;color:#475569;line-height:1.7;">
-                AI-powered sales coaching analytics for team managers.
-            </div>
-            <div style="margin-top:6px;font-size:1.05rem;font-weight:600;
-                        background:linear-gradient(90deg,#38bdf8,#818cf8);
-                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-                        background-clip:text;">
-                Track &nbsp;·&nbsp; Coach &nbsp;·&nbsp; Improve.
-            </div>
-
-            <!-- Divider -->
-            <div style="margin:28px 0;width:60px;height:3px;border-radius:2px;
-                        background:linear-gradient(90deg,#38bdf8,#818cf8);"></div>
-
-            <!-- Feature bullets -->
-            <div style="display:flex;flex-direction:column;gap:20px;">
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;
-                                background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);
-                                display:flex;align-items:center;justify-content:center;">
-                        <img src="data:image/svg+xml;base64,{svg_graph}" style="width:30px;height:30px;">
-                    </div>
-                    <div>
-                        <div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">Real-time KPI Dashboards</div>
-                        <div style="color:#475569;font-size:0.8rem;margin-top:2px;">Live metrics across all team reps</div>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;
-                                background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);
-                                display:flex;align-items:center;justify-content:center;">
-                        <img src="data:image/svg+xml;base64,{svg_brain}" style="width:30px;height:30px;">
-                    </div>
-                    <div>
-                        <div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">Skill Progression Tracking</div>
-                        <div style="color:#475569;font-size:0.8rem;margin-top:2px;">Monitor coaching impact over time</div>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;
-                                background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);
-                                display:flex;align-items:center;justify-content:center;">
-                        <img src="data:image/svg+xml;base64,{svg_robot}" style="width:30px;height:30px;">
-                    </div>
-                    <div>
-                        <div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">AI Coaching Assistant</div>
-                        <div style="color:#475569;font-size:0.8rem;margin-top:2px;">Ask anything about your team's performance</div>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;
-                                background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);
-                                display:flex;align-items:center;justify-content:center;">
-                        <img src="data:image/svg+xml;base64,{svg_plug}" style="width:30px;height:30px;">
-                    </div>
-                    <div>
-                        <div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">MCP Natural Language Queries</div>
-                        <div style="color:#475569;font-size:0.8rem;margin-top:2px;">Query analytics from Claude Desktop</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(_right_html, unsafe_allow_html=True)
 
     st.stop()
 
