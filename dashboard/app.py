@@ -537,9 +537,18 @@ if 'manager' not in st.session_state:
         """, unsafe_allow_html=True)
 
     # ── RIGHT: branding ────────────────────────────────────────────────────────
+    _dash_dir = Path(__file__).parent
+    def _svg_b64(name):
+        p = _dash_dir / name
+        return base64.b64encode(p.read_bytes()).decode() if p.exists() else ''
+    svg_analytics = _svg_b64('analytics-svgrepo-com.svg')
+    svg_brain     = _svg_b64('brain-svgrepo-com.svg')
+    svg_robot     = _svg_b64('robot-svgrepo-com.svg')
+    svg_plug      = _svg_b64('plug-svgrepo-com.svg')
+
     with col_right:
         st.markdown("<div style='height:14vh'></div>", unsafe_allow_html=True)
-        st.markdown("""
+        st.markdown(f"""
         <div style="padding-left:32px;white-space:nowrap;">
             <svg width="80" height="80" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
@@ -561,16 +570,16 @@ if 'manager' not in st.session_state:
             </div>
             <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;">
                 <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
-                    <span style="color:#38bdf8;font-size:1rem;">📊</span> Real-time KPI dashboards
+                    <img src="data:image/svg+xml;base64,{svg_analytics}" style="width:22px;height:22px;filter:brightness(0) saturate(100%) invert(73%) sepia(68%) saturate(500%) hue-rotate(180deg) brightness(105%) contrast(97%)"> Real-time KPI dashboards
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
-                    <span style="color:#818cf8;font-size:1rem;">🧠</span> Skill progression tracking
+                    <img src="data:image/svg+xml;base64,{svg_brain}" style="width:22px;height:22px;"> Skill progression tracking
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
-                    <span style="color:#34d399;font-size:1rem;">🤖</span> AI coaching assistant
+                    <img src="data:image/svg+xml;base64,{svg_robot}" style="width:22px;height:22px;"> AI coaching assistant
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
-                    <span style="color:#f472b6;font-size:1rem;">🔌</span> MCP natural language queries
+                    <img src="data:image/svg+xml;base64,{svg_plug}" style="width:22px;height:22px;filter:brightness(0) saturate(100%) invert(73%) sepia(50%) saturate(400%) hue-rotate(280deg) brightness(110%)"> MCP natural language queries
                 </div>
             </div>
         </div>
