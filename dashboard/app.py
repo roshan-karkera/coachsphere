@@ -119,6 +119,19 @@ section[data-testid="stSidebar"],
 [data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"] { display: none !important; }
 
+/* ── Pin manager card to bottom of sidebar ───────────────── */
+[data-testid="stSidebarContent"] {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+}
+.sidebar-spacer { flex: 1 !important; min-height: 40px; }
+.sidebar-bottom {
+    border-top: 1px solid rgba(56,189,248,0.1);
+    padding-top: 10px;
+    margin-top: 4px;
+}
+
 /* ── Metric cards ────────────────────────────────────────── */
 .metric-card {
     background: linear-gradient(135deg, #0f1f35 0%, #0a1628 100%);
@@ -637,23 +650,21 @@ with st.sidebar:
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
-    st.markdown("<div style='flex:1'></div>", unsafe_allow_html=True)
-    st.divider()
-    # Manager info card — pinned at bottom
+    # Push remaining content to bottom
+    st.markdown('<div class="sidebar-spacer"></div>', unsafe_allow_html=True)
+
+    # Manager info card + Sign Out — pinned at bottom
     team_color = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
     initials = ''.join(p[0] for p in _mgr['name'].split()[:2])
-    st.markdown(f"""
-    <div style="display:flex;align-items:center;gap:12px;padding:8px 0 6px 0;">
-        <div style="width:42px;height:42px;border-radius:50%;background:{team_color};
-                    display:flex;align-items:center;justify-content:center;
-                    font-weight:800;font-size:1.1rem;color:#0a1628;flex-shrink:0;">{initials}</div>
+    st.markdown(f"""<div class="sidebar-bottom">
+    <div style="display:flex;align-items:center;gap:12px;padding:4px 0 10px 0;">
+        <div style="width:42px;height:42px;border-radius:50%;background:{team_color};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:#0a1628;flex-shrink:0;">{initials}</div>
         <div>
             <div style="color:#e2e8f0;font-weight:700;font-size:0.95rem;">{_mgr['name']}</div>
             <div style="color:{team_color};font-size:0.78rem;font-weight:600;">{_mgr['team']} Team Manager</div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("Sign Out", use_container_width=True):
+    </div></div>""", unsafe_allow_html=True)
+    if st.button("Sign Out", use_container_width=True, key="signout_btn"):
         del st.session_state['manager']
         st.rerun()
 
