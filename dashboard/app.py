@@ -481,7 +481,7 @@ if 'manager' not in st.session_state:
     </style>
     """, unsafe_allow_html=True)
 
-    col_left, col_div, col_right = st.columns([5, 1, 6])
+    col_left, col_div, col_right = st.columns([5, 1, 7])
 
     # ── LEFT: login form ───────────────────────────────────────────────────────
     with col_left:
@@ -540,8 +540,8 @@ if 'manager' not in st.session_state:
     with col_right:
         st.markdown("<div style='height:14vh'></div>", unsafe_allow_html=True)
         st.markdown("""
-        <div style="padding-left:32px;">
-            <svg width="88" height="88" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <div style="padding-left:32px;white-space:nowrap;">
+            <svg width="80" height="80" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
                 <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
                 <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
@@ -551,25 +551,25 @@ if 'manager' not in st.session_state:
                 <circle cx="22" cy="16" r="2" fill="white"/>
                 <circle cx="31" cy="10" r="2" fill="white"/>
             </svg>
-            <div style="font-size:2.6rem;font-weight:900;letter-spacing:-0.03em;margin-top:16px;
+            <div style="font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;margin-top:14px;
                         background:linear-gradient(135deg,#e2e8f0 0%,#94a3b8 100%);
                         -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-                        background-clip:text;line-height:1.1;">Coach<br>Sphere</div>
-            <div style="color:#475569;font-size:1rem;margin-top:14px;line-height:1.6;max-width:280px;">
-                AI-powered sales coaching<br>analytics for team managers.<br>
+                        background-clip:text;line-height:1.15;white-space:nowrap;">CoachSphere</div>
+            <div style="color:#475569;font-size:0.92rem;margin-top:12px;line-height:1.7;white-space:nowrap;">
+                AI-powered sales coaching analytics for team managers.<br>
                 <span style="color:#38bdf8;">Track · Coach · Improve.</span>
             </div>
-            <div style="margin-top:28px;display:flex;flex-direction:column;gap:10px;">
-                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+            <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
                     <span style="color:#38bdf8;font-size:1rem;">📊</span> Real-time KPI dashboards
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
                     <span style="color:#818cf8;font-size:1rem;">🧠</span> Skill progression tracking
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
                     <span style="color:#34d399;font-size:1rem;">🤖</span> AI coaching assistant
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;">
+                <div style="display:flex;align-items:center;gap:10px;color:#64748b;font-size:0.85rem;white-space:nowrap;">
                     <span style="color:#f472b6;font-size:1rem;">🔌</span> MCP natural language queries
                 </div>
             </div>
