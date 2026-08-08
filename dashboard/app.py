@@ -128,8 +128,8 @@ header[data-testid="stHeader"] {
     background: rgba(239,68,68,0.18) !important;
     border-color: rgba(239,68,68,0.5) !important;
 }
-.signout-btn img { filter: invert(40%) sepia(80%) saturate(600%) hue-rotate(320deg) brightness(110%); width:17px; height:17px; }
-.signout-btn:hover img { filter: invert(30%) sepia(90%) saturate(700%) hue-rotate(320deg) brightness(120%); }
+.signout-btn img { filter: brightness(0) invert(1); width:17px; height:17px; opacity:0.7; }
+.signout-btn:hover img { filter: brightness(0) invert(1); opacity:1; }
 .signout-btn::after {
     content: "Sign Out" !important;
     position: absolute !important;
