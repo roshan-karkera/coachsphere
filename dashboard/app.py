@@ -451,6 +451,82 @@ def dark_table(df):
     </div>"""
     st.markdown(html, unsafe_allow_html=True)
 
+# ── Manager credentials ────────────────────────────────────────────────────────
+MANAGERS = {
+    'james.howard':  {'name': 'James Howard',  'team': 'Enterprise', 'password': 'Enterprise2024'},
+    'lorraine.todd': {'name': 'Lorraine Todd', 'team': 'SMB',        'password': 'SMB2024'},
+    'amy.stewart':   {'name': 'Amy Stewart',   'team': 'EMEA',       'password': 'EMEA2024'},
+    'lisa.barnes':   {'name': 'Lisa Barnes',   'team': 'APAC',       'password': 'APAC2024'},
+}
+
+# ── Login gate ─────────────────────────────────────────────────────────────────
+if 'manager' not in st.session_state:
+    st.markdown("""
+    <style>
+    /* Center login card */
+    [data-testid="stMain"] > div { display:flex; align-items:center; justify-content:center; min-height:90vh; }
+    [data-testid="stVerticalBlock"] > div:first-child { width:100%; max-width:420px; margin:auto; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col_l, col_c, col_r = st.columns([1, 2, 1])
+    with col_c:
+        st.markdown("""
+        <div style="text-align:center;margin-bottom:28px;">
+            <svg width="64" height="64" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="24" cy="24" r="23" fill="#38bdf8" stroke="#0ea5e9" stroke-width="1.5"/>
+                <rect x="10" y="28" width="6" height="10" rx="1.5" fill="white"/>
+                <rect x="19" y="22" width="6" height="16" rx="1.5" fill="white"/>
+                <rect x="28" y="16" width="6" height="22" rx="1.5" fill="white"/>
+                <polyline points="13,22 22,16 31,10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                <circle cx="13" cy="22" r="2" fill="white"/>
+                <circle cx="22" cy="16" r="2" fill="white"/>
+                <circle cx="31" cy="10" r="2" fill="white"/>
+            </svg>
+            <div style="font-size:1.9rem;font-weight:800;color:#e2e8f0;margin-top:10px;letter-spacing:-0.02em;">CoachSphere</div>
+            <div style="color:#64748b;font-size:0.9rem;margin-top:4px;">Manager Portal · AI Sales Coaching Analytics</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.form("login_form"):
+            st.markdown('<div style="color:#94a3b8;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;margin-bottom:4px;">USERNAME</div>', unsafe_allow_html=True)
+            username = st.text_input("", placeholder="e.g. james.howard", label_visibility="collapsed")
+            st.markdown('<div style="color:#94a3b8;font-size:0.78rem;font-weight:600;letter-spacing:0.08em;margin-bottom:4px;margin-top:12px;">PASSWORD</div>', unsafe_allow_html=True)
+            password = st.text_input("", type="password", placeholder="••••••••••••", label_visibility="collapsed")
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
+
+        if submitted:
+            key = username.strip().lower()
+            mgr = MANAGERS.get(key)
+            if mgr and mgr['password'] == password:
+                st.session_state['manager'] = mgr
+                st.rerun()
+            else:
+                st.markdown("""
+                <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+                            border-radius:8px;padding:10px 14px;color:#fca5a5;font-size:0.85rem;margin-top:8px;text-align:center;">
+                    Invalid username or password
+                </div>""", unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="margin-top:24px;padding:14px;background:rgba(15,31,53,0.6);border-radius:10px;
+                    border:1px solid rgba(56,189,248,0.1);">
+            <div style="color:#475569;font-size:0.75rem;font-weight:600;text-transform:uppercase;
+                        letter-spacing:0.08em;margin-bottom:10px;">Manager Accounts</div>
+            <div style="display:grid;gap:6px;">
+                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#38bdf8;font-weight:600;">james.howard</span> · Enterprise</div>
+                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#818cf8;font-weight:600;">lorraine.todd</span> · SMB</div>
+                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#34d399;font-weight:600;">amy.stewart</span> · EMEA</div>
+                <div style="color:#64748b;font-size:0.8rem;"><span style="color:#f472b6;font-weight:600;">lisa.barnes</span> · APAC</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.stop()
+
+_mgr = st.session_state['manager']
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
@@ -481,8 +557,26 @@ with st.sidebar:
         "🔌 MCP Server",
     ])
     st.divider()
-    teams_all = query("SELECT DISTINCT team FROM users WHERE role != 'Team Lead'")['team'].tolist()
-    sel_teams = st.multiselect("Filter by Team", teams_all, default=teams_all)
+    # Manager info card
+    team_color = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
+    initials = ''.join(p[0] for p in _mgr['name'].split()[:2])
+    st.markdown(f"""
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0 6px 0;">
+        <div style="width:42px;height:42px;border-radius:50%;background:{team_color};
+                    display:flex;align-items:center;justify-content:center;
+                    font-weight:800;font-size:1.1rem;color:#0a1628;flex-shrink:0;">{initials}</div>
+        <div>
+            <div style="color:#e2e8f0;font-weight:700;font-size:0.95rem;">{_mgr['name']}</div>
+            <div style="color:{team_color};font-size:0.78rem;font-weight:600;">{_mgr['team']} Team Manager</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Sign Out", use_container_width=True):
+        del st.session_state['manager']
+        st.rerun()
+    st.divider()
+
+    sel_teams = [_mgr['team']]
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
@@ -493,7 +587,7 @@ team_filter = "','".join(sel_teams) if sel_teams else "''"
 if page == "📊 Overview":
     st.markdown(f"""<div class="page-hero">
         <div class="hero-title">{_icon('icon_overview.png')} Platform Overview</div>
-        <div class="hero-sub">Platform metrics · {sel_month} &nbsp;·&nbsp; {len(sel_teams)} teams active</div>
+        <div class="hero-sub">Platform metrics · {sel_month} &nbsp;·&nbsp; {_mgr['team']} Team</div>
     </div>""", unsafe_allow_html=True)
 
     # KPI cards
