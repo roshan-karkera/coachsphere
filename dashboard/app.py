@@ -120,16 +120,22 @@ section[data-testid="stSidebar"],
 [data-testid="collapsedControl"] { display: none !important; }
 
 /* ── Pin manager card to bottom of sidebar ───────────────── */
-[data-testid="stSidebarContent"] {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 100vh !important;
-}
-.sidebar-spacer { flex: 1 !important; min-height: 40px; }
 .sidebar-bottom {
-    border-top: 1px solid rgba(56,189,248,0.1);
-    padding-top: 10px;
-    margin-top: 4px;
+    position: fixed !important;
+    bottom: 60px !important;
+    left: 0 !important;
+    width: 318px !important;
+    background: #0a1628 !important;
+    padding: 10px 16px 6px 16px !important;
+    border-top: 1px solid rgba(56,189,248,0.12) !important;
+    z-index: 999 !important;
+}
+section[data-testid="stSidebar"] .stButton:last-child {
+    position: fixed !important;
+    bottom: 12px !important;
+    left: 8px !important;
+    width: 302px !important;
+    z-index: 999 !important;
 }
 
 /* ── Metric cards ────────────────────────────────────────── */
@@ -650,10 +656,7 @@ with st.sidebar:
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
-    # Push remaining content to bottom
-    st.markdown('<div class="sidebar-spacer"></div>', unsafe_allow_html=True)
-
-    # Manager info card + Sign Out — pinned at bottom
+    # Manager info card + Sign Out — pinned at bottom via fixed CSS
     team_color = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
     initials = ''.join(p[0] for p in _mgr['name'].split()[:2])
     st.markdown(f"""<div class="sidebar-bottom">
