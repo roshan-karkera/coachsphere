@@ -87,10 +87,29 @@ h1,h2,h3,h4,p,span,label { color: #e2e8f0; }
 [data-testid="stChatMessage"] p,
 [data-testid="stChatMessage"] li { color: #ffffff !important; }
 
-/* ── Hide Streamlit chrome (top & bottom bars) ───────────── */
-header[data-testid="stHeader"] { display: none !important; }
+/* ── Streamlit header — keep visible, style to match theme ── */
+header[data-testid="stHeader"] {
+    background: #070d1a !important;
+    border-bottom: 1px solid rgba(56,189,248,0.08) !important;
+}
 [data-testid="stToolbar"] { display: none !important; }
 [data-testid="stDecoration"] { display: none !important; }
+
+/* ── Manager badge — fixed top-right in header ───────────── */
+.manager-badge {
+    position: fixed !important;
+    top: 8px !important;
+    right: 16px !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    background: rgba(10,22,40,0.9) !important;
+    border: 1px solid rgba(56,189,248,0.15) !important;
+    border-radius: 10px !important;
+    padding: 6px 14px 6px 8px !important;
+    backdrop-filter: blur(8px) !important;
+}
 [data-testid="stBottom"],
 [data-testid="stBottom"] > div,
 [data-testid="stBottom"] > div > div,
@@ -622,6 +641,18 @@ if 'manager' not in st.session_state:
 
 _mgr = st.session_state['manager']
 
+# ── Manager badge injected into header area (top-right) ───────────────────────
+_tc = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
+_ini = ''.join(p[0] for p in _mgr['name'].split()[:2])
+st.markdown(
+    f'<div class="manager-badge">'
+    f'<div style="width:32px;height:32px;border-radius:50%;background:{_tc};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;color:#0a1628;">{_ini}</div>'
+    f'<div><div style="color:#e2e8f0;font-size:0.82rem;font-weight:700;line-height:1.2;">{_mgr["name"]}</div>'
+    f'<div style="color:{_tc};font-size:0.7rem;font-weight:600;">{_mgr["team"]} Team</div></div>'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
@@ -656,17 +687,8 @@ with st.sidebar:
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
-    # Manager info card + Sign Out — pinned at bottom via fixed CSS
-    team_color = TEAM_COLORS.get(_mgr['team'], '#38bdf8')
-    initials = ''.join(p[0] for p in _mgr['name'].split()[:2])
-    st.markdown(f"""<div class="sidebar-bottom">
-    <div style="display:flex;align-items:center;gap:12px;padding:4px 0 10px 0;">
-        <div style="width:42px;height:42px;border-radius:50%;background:{team_color};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:#0a1628;flex-shrink:0;">{initials}</div>
-        <div>
-            <div style="color:#e2e8f0;font-weight:700;font-size:0.95rem;">{_mgr['name']}</div>
-            <div style="color:{team_color};font-size:0.78rem;font-weight:600;">{_mgr['team']} Team Manager</div>
-        </div>
-    </div></div>""", unsafe_allow_html=True)
+    # Sign Out — pinned at bottom
+    st.markdown('<div class="sidebar-bottom"></div>', unsafe_allow_html=True)
     if st.button("Sign Out", use_container_width=True, key="signout_btn"):
         del st.session_state['manager']
         st.rerun()
