@@ -767,13 +767,14 @@ if page == "🏢 VP Overview":
 
     # ── Per-team KPI table ───────────────────────────────────────────────────
     st.markdown("### Team Performance by Manager")
-    team_kpis = query(f"""
+    team_kpis = query("""
         SELECT
             team,
             ROUND(AVG(engagement_score),3)             AS avg_engagement,
             ROUND(AVG(coaching_effectiveness_score),3) AS avg_effectiveness,
             ROUND(AVG(skill_score),3)                  AS avg_skill,
-            ROUND(AVG(quota_attainment),3)             AS avg_quota,
+            ROUND(AVG(communication_quality_score),3)  AS avg_communication,
+            ROUND(AVG(business_impact_index),3)        AS avg_business_impact,
             COUNT(DISTINCT user_id)                    AS reps
         FROM v_coaching_effectiveness
         WHERE period_month = ?
@@ -818,8 +819,8 @@ if page == "🏢 VP Overview":
     <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_engagement']):.3f}</span>
   </div>
   <div style="display:flex;justify-content:space-between;">
-    <span style="color:#94a3b8;font-size:0.75rem;">Quota Attainment</span>
-    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_quota'])*100:.1f}%</span>
+    <span style="color:#94a3b8;font-size:0.75rem;">Business Impact</span>
+    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_business_impact']):.3f}</span>
   </div>
   <div style="margin-top:10px;color:#64748b;font-size:0.72rem;">{int(row['reps'])} reps</div>
 </div>""", unsafe_allow_html=True)
