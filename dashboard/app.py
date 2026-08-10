@@ -727,7 +727,10 @@ with st.sidebar:
     st.markdown("## CoachSphere")
     st.markdown("*AI Sales Coaching Analytics*")
     st.divider()
-    page = st.radio("Navigation", [
+    _nav_pages = []
+    if _mgr['team'] == 'VP Sales':
+        _nav_pages.append("🏢 VP Overview")
+    _nav_pages += [
         "📊 Overview",
         "👥 Team Analytics",
         "🧠 Skill Progression",
@@ -736,7 +739,8 @@ with st.sidebar:
         "📋 Metric Definitions",
         "🤖 AI Assistant",
         "🔌 MCP Server",
-    ])
+    ]
+    page = st.radio("Navigation", _nav_pages)
     st.divider()
     sel_teams = ALL_TEAMS if _mgr['team'] == 'VP Sales' else [_mgr['team']]
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
@@ -745,6 +749,128 @@ with st.sidebar:
 
 
 team_filter = "','".join(sel_teams) if sel_teams else "''"
+
+# Manager → team mapping for VP view
+TEAM_MANAGERS = {
+    'Enterprise': 'James Howard',
+    'SMB':        'Lorraine Todd',
+    'EMEA':       'Amy Stewart',
+    'APAC':       'Lisa Barnes',
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+if page == "🏢 VP Overview":
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">🏢 VP Sales Overview</div>
+        <div class="hero-sub">Cross-team performance · {sel_month} &nbsp;·&nbsp; All Regions</div>
+    </div>""", unsafe_allow_html=True)
+
+    # ── Per-team KPI table ───────────────────────────────────────────────────
+    st.markdown("### Team Performance by Manager")
+    team_kpis = query(f"""
+        SELECT
+            team,
+            ROUND(AVG(engagement_score),3)             AS avg_engagement,
+            ROUND(AVG(coaching_effectiveness_score),3) AS avg_effectiveness,
+            ROUND(AVG(skill_score),3)                  AS avg_skill,
+            ROUND(AVG(quota_attainment),3)             AS avg_quota,
+            COUNT(DISTINCT user_id)                    AS reps
+        FROM v_coaching_effectiveness
+        WHERE period_month = ?
+        GROUP BY team
+        ORDER BY avg_effectiveness DESC
+    """, (sel_month,))
+
+    prev_month = months_all[months_all.index(sel_month)-1] if months_all.index(sel_month) > 0 else sel_month
+    team_kpis_prev = query(f"""
+        SELECT team, ROUND(AVG(coaching_effectiveness_score),3) AS eff_prev
+        FROM v_coaching_effectiveness
+        WHERE period_month = ?
+        GROUP BY team
+    """, (prev_month,))
+    prev_map = dict(zip(team_kpis_prev['team'], team_kpis_prev['eff_prev']))
+
+    cols = st.columns(4)
+    for i, row in team_kpis.iterrows():
+        t = row['team']
+        tc = TEAM_COLORS.get(t, '#38bdf8')
+        mgr_name = TEAM_MANAGERS.get(t, '—')
+        eff_now = float(row['avg_effectiveness'])
+        eff_prev_val = float(prev_map.get(t, eff_now))
+        delta = eff_now - eff_prev_val
+        arrow = "↑" if delta >= 0 else "↓"
+        arrow_col = "#34d399" if delta >= 0 else "#f87171"
+        with cols[i % 4]:
+            st.markdown(f"""
+<div style="background:rgba(10,22,40,0.7);border:1px solid {tc}33;border-radius:12px;padding:18px 14px;margin-bottom:14px;">
+  <div style="color:{tc};font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">{t}</div>
+  <div style="color:#e2e8f0;font-size:0.82rem;margin-bottom:12px;">Manager: <b style="color:{tc};">{mgr_name}</b></div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+    <span style="color:#94a3b8;font-size:0.75rem;">Effectiveness</span>
+    <span style="color:#e2e8f0;font-weight:700;">{eff_now:.3f} <span style="color:{arrow_col};font-size:0.8rem;">{arrow}{abs(delta):.3f}</span></span>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+    <span style="color:#94a3b8;font-size:0.75rem;">Skill Score</span>
+    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_skill']):.3f}</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+    <span style="color:#94a3b8;font-size:0.75rem;">Engagement</span>
+    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_engagement']):.3f}</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;">
+    <span style="color:#94a3b8;font-size:0.75rem;">Quota Attainment</span>
+    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_quota'])*100:.1f}%</span>
+  </div>
+  <div style="margin-top:10px;color:#64748b;font-size:0.72rem;">{int(row['reps'])} reps</div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ── Effectiveness trend — all teams on one chart ─────────────────────────
+    st.markdown("### Coaching Effectiveness Trend — All Teams")
+    trend = query("""
+        SELECT period_month, team, ROUND(AVG(coaching_effectiveness_score),3) AS eff
+        FROM v_coaching_effectiveness
+        GROUP BY period_month, team
+        ORDER BY period_month
+    """)
+    fig_trend = px.line(
+        trend, x='period_month', y='eff', color='team',
+        color_discrete_map=TEAM_COLORS,
+        markers=True,
+        labels={'period_month':'Month','eff':'Avg Effectiveness','team':'Team'},
+        **_PCHART,
+    )
+    fig_trend.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#ffffff'), legend=dict(font=dict(color='#ffffff')),
+        xaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
+        yaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
+    )
+    st.plotly_chart(fig_trend, use_container_width=True)
+
+    # ── Skill score comparison bar ────────────────────────────────────────────
+    st.markdown("### Skill Score by Team")
+    skill_trend = query("""
+        SELECT period_month, team, ROUND(AVG(skill_score),3) AS skill
+        FROM v_coaching_effectiveness
+        GROUP BY period_month, team
+        ORDER BY period_month
+    """)
+    fig_skill = px.bar(
+        skill_trend, x='period_month', y='skill', color='team',
+        barmode='group',
+        color_discrete_map=TEAM_COLORS,
+        labels={'period_month':'Month','skill':'Avg Skill Score','team':'Team'},
+        **_PCHART,
+    )
+    fig_skill.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='#ffffff'), legend=dict(font=dict(color='#ffffff')),
+        xaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
+        yaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
+    )
+    st.plotly_chart(fig_skill, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 if page == "📊 Overview":
