@@ -765,8 +765,7 @@ if page == "🏢 VP Overview":
         <div class="hero-sub">Cross-team performance · {sel_month} &nbsp;·&nbsp; All Regions</div>
     </div>""", unsafe_allow_html=True)
 
-    # ── Per-team KPI table ───────────────────────────────────────────────────
-    st.markdown("### Team Performance by Manager")
+    # ── Fetch data ────────────────────────────────────────────────────────────
     team_kpis = query("""
         SELECT
             team,
@@ -783,7 +782,7 @@ if page == "🏢 VP Overview":
     """, (sel_month,))
 
     prev_month = months_all[months_all.index(sel_month)-1] if months_all.index(sel_month) > 0 else sel_month
-    team_kpis_prev = query(f"""
+    team_kpis_prev = query("""
         SELECT team, ROUND(AVG(coaching_effectiveness_score),3) AS eff_prev
         FROM v_coaching_effectiveness
         WHERE period_month = ?
@@ -791,87 +790,97 @@ if page == "🏢 VP Overview":
     """, (prev_month,))
     prev_map = dict(zip(team_kpis_prev['team'], team_kpis_prev['eff_prev']))
 
-    cols = st.columns(4)
-    for i, row in team_kpis.iterrows():
-        t = row['team']
-        tc = TEAM_COLORS.get(t, '#38bdf8')
-        mgr_name = TEAM_MANAGERS.get(t, '—')
-        eff_now = float(row['avg_effectiveness'])
-        eff_prev_val = float(prev_map.get(t, eff_now))
-        delta = eff_now - eff_prev_val
-        arrow = "↑" if delta >= 0 else "↓"
-        arrow_col = "#34d399" if delta >= 0 else "#f87171"
-        with cols[i % 4]:
-            st.markdown(f"""
-<div style="background:rgba(10,22,40,0.7);border:1px solid {tc}33;border-radius:12px;padding:18px 14px;margin-bottom:14px;">
-  <div style="color:{tc};font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">{t}</div>
-  <div style="color:#e2e8f0;font-size:0.82rem;margin-bottom:12px;">Manager: <b style="color:{tc};">{mgr_name}</b></div>
-  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-    <span style="color:#94a3b8;font-size:0.75rem;">Effectiveness</span>
-    <span style="color:#e2e8f0;font-weight:700;">{eff_now:.3f} <span style="color:{arrow_col};font-size:0.8rem;">{arrow}{abs(delta):.3f}</span></span>
-  </div>
-  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-    <span style="color:#94a3b8;font-size:0.75rem;">Skill Score</span>
-    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_skill']):.3f}</span>
-  </div>
-  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-    <span style="color:#94a3b8;font-size:0.75rem;">Engagement</span>
-    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_engagement']):.3f}</span>
-  </div>
-  <div style="display:flex;justify-content:space-between;">
-    <span style="color:#94a3b8;font-size:0.75rem;">Business Impact</span>
-    <span style="color:#e2e8f0;font-weight:700;">{float(row['avg_business_impact']):.3f}</span>
-  </div>
-  <div style="margin-top:10px;color:#64748b;font-size:0.72rem;">{int(row['reps'])} reps</div>
+    # ── Grid header row ───────────────────────────────────────────────────────
+    st.markdown('<div class="section-title" style="margin-top:8px;">Team Performance by Manager</div>', unsafe_allow_html=True)
+
+    # Build one HTML grid table for clean alignment
+    rows_html = ""
+    for _, row in team_kpis.iterrows():
+        t        = row['team']
+        tc       = TEAM_COLORS.get(t, '#38bdf8')
+        mgr      = TEAM_MANAGERS.get(t, '—')
+        eff      = float(row['avg_effectiveness'])
+        eff_prev = float(prev_map.get(t, eff))
+        delta    = eff - eff_prev
+        sign     = "+" if delta >= 0 else ""
+        d_col    = "#34d399" if delta >= 0 else "#f87171"
+        rows_html += f"""
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+  <td style="padding:14px 16px;white-space:nowrap;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:10px;height:10px;border-radius:50%;background:{tc};flex-shrink:0;"></div>
+      <div>
+        <div style="color:{tc};font-weight:700;font-size:0.85rem;letter-spacing:0.04em;">{t}</div>
+        <div style="color:#94a3b8;font-size:0.75rem;margin-top:2px;">{mgr}</div>
+      </div>
+    </div>
+  </td>
+  <td style="padding:14px 16px;text-align:right;">
+    <div style="color:#e2e8f0;font-weight:700;font-size:0.95rem;">{eff:.3f}</div>
+    <div style="color:{d_col};font-size:0.72rem;margin-top:2px;">{sign}{delta:.3f} vs prev</div>
+  </td>
+  <td style="padding:14px 16px;text-align:right;color:#e2e8f0;font-weight:600;">{float(row['avg_skill']):.3f}</td>
+  <td style="padding:14px 16px;text-align:right;color:#e2e8f0;font-weight:600;">{float(row['avg_engagement']):.3f}</td>
+  <td style="padding:14px 16px;text-align:right;color:#e2e8f0;font-weight:600;">{float(row['avg_communication']):.3f}</td>
+  <td style="padding:14px 16px;text-align:right;color:#e2e8f0;font-weight:600;">{float(row['avg_business_impact']):.3f}</td>
+  <td style="padding:14px 16px;text-align:right;color:#64748b;font-size:0.8rem;">{int(row['reps'])} reps</td>
+</tr>"""
+
+    st.markdown(f"""
+<div style="background:rgba(10,22,40,0.6);border:1px solid rgba(56,189,248,0.1);border-radius:14px;overflow:hidden;margin-bottom:28px;">
+<table style="width:100%;border-collapse:collapse;font-family:inherit;">
+  <thead>
+    <tr style="background:rgba(56,189,248,0.06);border-bottom:1px solid rgba(56,189,248,0.12);">
+      <th style="padding:11px 16px;text-align:left;color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Team / Manager</th>
+      <th style="padding:11px 16px;text-align:right;color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Effectiveness</th>
+      <th style="padding:11px 16px;text-align:right;color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Skill</th>
+      <th style="padding:11px 16px;text-align:right;color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Engagement</th>
+      <th style="padding:11px 16px;text-align:right;color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Communication</th>
+      <th style="padding:11px 16px;text-align:right;color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Biz Impact</th>
+      <th style="padding:11px 16px;text-align:right;color:#64748b;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Reps</th>
+    </tr>
+  </thead>
+  <tbody>{rows_html}</tbody>
+</table>
 </div>""", unsafe_allow_html=True)
 
-    st.markdown("---")
-
-    # ── Effectiveness trend — all teams on one chart ─────────────────────────
-    st.markdown("### Coaching Effectiveness Trend — All Teams")
-    trend = query("""
-        SELECT period_month, team, ROUND(AVG(coaching_effectiveness_score),3) AS eff
-        FROM v_coaching_effectiveness
-        GROUP BY period_month, team
-        ORDER BY period_month
-    """)
-    fig_trend = px.line(
-        trend, x='period_month', y='eff', color='team',
-        color_discrete_map=TEAM_COLORS,
-        markers=True,
-        labels={'period_month':'Month','eff':'Avg Effectiveness','team':'Team'},
-        **_PCHART,
-    )
-    fig_trend.update_layout(
+    # ── Effectiveness trend ───────────────────────────────────────────────────
+    _chart_layout = dict(
         plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='#ffffff'), legend=dict(font=dict(color='#ffffff')),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
+        font=dict(color='#ffffff', family='Inter,sans-serif'),
+        legend=dict(font=dict(color='#ffffff'), bgcolor='rgba(0,0,0,0)'),
+        xaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8', linecolor='rgba(255,255,255,0.08)'),
+        yaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8', linecolor='rgba(255,255,255,0.08)'),
+        margin=dict(t=20, b=20, l=0, r=0),
     )
-    st.plotly_chart(fig_trend, use_container_width=True)
 
-    # ── Skill score comparison bar ────────────────────────────────────────────
-    st.markdown("### Skill Score by Team")
-    skill_trend = query("""
-        SELECT period_month, team, ROUND(AVG(skill_score),3) AS skill
-        FROM v_coaching_effectiveness
-        GROUP BY period_month, team
-        ORDER BY period_month
-    """)
-    fig_skill = px.bar(
-        skill_trend, x='period_month', y='skill', color='team',
-        barmode='group',
-        color_discrete_map=TEAM_COLORS,
-        labels={'period_month':'Month','skill':'Avg Skill Score','team':'Team'},
-        **_PCHART,
-    )
-    fig_skill.update_layout(
-        plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='#ffffff'), legend=dict(font=dict(color='#ffffff')),
-        xaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
-        yaxis=dict(gridcolor='rgba(255,255,255,0.05)', color='#94a3b8'),
-    )
-    st.plotly_chart(fig_skill, use_container_width=True)
+    c_left, c_right = st.columns(2)
+
+    with c_left:
+        st.markdown('<div class="section-title">Effectiveness Trend</div>', unsafe_allow_html=True)
+        trend = query("""
+            SELECT period_month, team, ROUND(AVG(coaching_effectiveness_score),3) AS eff
+            FROM v_coaching_effectiveness
+            GROUP BY period_month, team ORDER BY period_month
+        """)
+        fig_trend = px.line(trend, x='period_month', y='eff', color='team',
+            color_discrete_map=TEAM_COLORS, markers=True,
+            labels={'period_month':'Month','eff':'Effectiveness','team':'Team'})
+        fig_trend.update_layout(**_chart_layout)
+        st.plotly_chart(fig_trend, use_container_width=True)
+
+    with c_right:
+        st.markdown('<div class="section-title">Skill Score by Team</div>', unsafe_allow_html=True)
+        skill_trend = query("""
+            SELECT period_month, team, ROUND(AVG(skill_score),3) AS skill
+            FROM v_coaching_effectiveness
+            GROUP BY period_month, team ORDER BY period_month
+        """)
+        fig_skill = px.bar(skill_trend, x='period_month', y='skill', color='team',
+            barmode='group', color_discrete_map=TEAM_COLORS,
+            labels={'period_month':'Month','skill':'Skill Score','team':'Team'})
+        fig_skill.update_layout(**_chart_layout)
+        st.plotly_chart(fig_skill, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 if page == "📊 Overview":
