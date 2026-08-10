@@ -484,7 +484,7 @@ div[class*="viewerBadge"],.stDeployButton { display: none !important; }
 """, unsafe_allow_html=True)
 
 COLORS = ['#38bdf8','#818cf8','#34d399','#f472b6','#fb923c']
-TEAM_COLORS = {'Enterprise':'#38bdf8','SMB':'#818cf8','EMEA':'#34d399','APAC':'#f472b6'}
+TEAM_COLORS = {'Enterprise':'#38bdf8','SMB':'#818cf8','EMEA':'#34d399','APAC':'#f472b6','Global':'#fbbf24'}
 
 @st.cache_data
 def query(sql, params=()):
@@ -540,7 +540,9 @@ MANAGERS = {
     'lorraine.todd': {'name': 'Lorraine Todd', 'team': 'SMB',        'password': 'SMB2024'},
     'amy.stewart':   {'name': 'Amy Stewart',   'team': 'EMEA',       'password': 'EMEA2024'},
     'lisa.barnes':   {'name': 'Lisa Barnes',   'team': 'APAC',       'password': 'APAC2024'},
+    'david.chen':    {'name': 'David Chen',    'team': 'Global',     'password': 'Global2024'},
 }
+ALL_TEAMS = ['Enterprise', 'SMB', 'EMEA', 'APAC']
 
 # ── Login gate ─────────────────────────────────────────────────────────────────
 if 'manager' not in st.session_state:
@@ -736,7 +738,7 @@ with st.sidebar:
         "🔌 MCP Server",
     ])
     st.divider()
-    sel_teams = [_mgr['team']]
+    sel_teams = ALL_TEAMS if _mgr['team'] == 'Global' else [_mgr['team']]
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
 
