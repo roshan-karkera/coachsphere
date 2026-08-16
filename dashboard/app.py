@@ -67,11 +67,7 @@ st.set_page_config(
 )
 
 # ── Cookie-based session (30-min persistence across refreshes) ────────────────
-@st.cache_resource
-def _get_cookie_manager():
-    return stx.CookieManager()
-
-_cm = _get_cookie_manager()
+_cm = stx.CookieManager()
 _SESSION_COOKIE = 'cs_mgr_session'
 _SESSION_TTL    = 1800  # 30 minutes
 
