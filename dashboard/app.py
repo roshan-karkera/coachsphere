@@ -22,7 +22,10 @@ import os
 import sys
 import json
 import base64
+import time
+import datetime
 from pathlib import Path
+import extra_streamlit_components as stx
 
 # Load API key — Streamlit Cloud secrets take priority, then .env for local dev
 try:
@@ -63,11 +66,35 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ── Cookie-based session (30-min persistence across refreshes) ────────────────
+@st.cache_resource
+def _get_cookie_manager():
+    return stx.CookieManager()
+
+_cm = _get_cookie_manager()
+_SESSION_COOKIE = 'cs_mgr_session'
+_SESSION_TTL    = 1800  # 30 minutes
+
+# Restore session from cookie if not already in session_state
+if 'manager' not in st.session_state:
+    try:
+        _cookie_val = _cm.get(_SESSION_COOKIE)
+        if _cookie_val:
+            _data = json.loads(_cookie_val)
+            if _data.get('exp', 0) > time.time():
+                st.session_state['manager'] = _data['manager']
+    except Exception:
+        pass
+
 # ── Sign-out via query param ──────────────────────────────────────────────────
 if st.query_params.get("signout"):
     st.query_params.clear()
     if "manager" in st.session_state:
         del st.session_state["manager"]
+    try:
+        _cm.delete(_SESSION_COOKIE)
+    except Exception:
+        pass
     st.rerun()
 
 # Clear cache once per browser session (not on every rerun)
@@ -591,6 +618,12 @@ if 'manager' not in st.session_state:
             mgr = MANAGERS.get(key)
             if mgr and mgr['password'] == password:
                 st.session_state['manager'] = mgr
+                try:
+                    _cookie_data = json.dumps({'manager': mgr, 'exp': time.time() + _SESSION_TTL})
+                    _cm.set(_SESSION_COOKIE, _cookie_data,
+                            expires_at=datetime.datetime.now() + datetime.timedelta(seconds=_SESSION_TTL))
+                except Exception:
+                    pass
                 st.rerun()
             else:
                 st.markdown("""
