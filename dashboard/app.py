@@ -1867,7 +1867,7 @@ elif page == "🤖 AI Assistant":
                 # ── Agentic loop (max 5 iterations) ──────────────────────
                 for _ in range(5):
                     response = client.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
+                        model="llama3-70b-8192",
                         messages=messages,
                         tools=TOOLS,
                         tool_choice="auto",
@@ -1946,7 +1946,7 @@ elif page == "🤖 AI Assistant":
                         retry_trace_entries = []
                         for _ in range(5):
                             retry_resp = client.chat.completions.create(
-                                model="llama-3.3-70b-versatile",
+                                model="llama3-70b-8192",
                                 messages=retry_messages,
                                 tools=TOOLS,
                                 tool_choice="auto",
