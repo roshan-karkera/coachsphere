@@ -1867,7 +1867,7 @@ elif page == "🤖 AI Assistant":
                 # ── Agentic loop (max 5 iterations) ──────────────────────
                 for _ in range(5):
                     response = client.chat.completions.create(
-                        model="gemma2-9b-it",
+                        model="qwen/qwen3.6-27b",
                         messages=messages,
                         tools=TOOLS,
                         tool_choice="auto",
@@ -1946,7 +1946,7 @@ elif page == "🤖 AI Assistant":
                         retry_trace_entries = []
                         for _ in range(5):
                             retry_resp = client.chat.completions.create(
-                                model="gemma2-9b-it",
+                                model="qwen/qwen3.6-27b",
                                 messages=retry_messages,
                                 tools=TOOLS,
                                 tool_choice="auto",
