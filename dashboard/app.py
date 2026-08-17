@@ -1836,11 +1836,13 @@ elif page == "🤖 AI Assistant":
                     "- Use get_top_performers only when asked for top reps by overall coaching effectiveness. "
                     "- Use get_rep_profile only when you already know a rep's name and want their full history. "
                     "  Do NOT call get_rep_profile just to enrich results from another tool. "
-                    "- Use identify_underperforming_segments when asked about struggling, weak, or at-risk teams. "
+                    "- Use identify_underperforming_segments when asked about struggling, weak, at-risk, underperforming, or lowest-performing teams OR reps. "
                     "- Use compare_skill_progression to compare skills across teams or over time. "
                     "- Use explain_metric_definition when asked how a metric is defined or calculated. "
                     "- Never say a rep was 'not found' if a tool returned data — report what you found. "
                     "- Call only ONE tool per question unless a second tool is truly necessary. "
+                    "- NEVER include markdown tables, bullet lists, or raw data in your text response. "
+                    "  The data is already displayed separately. Just write 1-2 plain sentences summarising the key insight. "
                     "- For greetings, thanks, acknowledgements, or any non-data message "
                     "(e.g. 'hi', 'thanks', 'okay', 'good', 'great', 'cool', 'nice', 'got it', 'okay that's good'), "
                     "NEVER call a tool. Just reply conversationally in one short sentence. "
@@ -1919,7 +1921,17 @@ elif page == "🤖 AI Assistant":
                             })
                     else:
                         # No more tool calls — final answer reached
-                        final_answer = resp_msg.content or "No answer generated."
+                        final_answer = (resp_msg.content or "").strip()
+                        if not final_answer:
+                            # Model returned empty content — force a summary response
+                            messages.append({"role": "assistant", "content": ""})
+                            messages.append({"role": "user", "content": "Based on the tool results above, please provide your answer now."})
+                            _forced = client.chat.completions.create(
+                                model="openai/gpt-oss-120b",
+                                messages=messages,
+                                temperature=0
+                            )
+                            final_answer = (_forced.choices[0].message.content or "").strip() or "No answer generated."
                         break
                 else:
                     final_answer = "Agent reached maximum iterations without a final answer."
