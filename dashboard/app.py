@@ -1688,6 +1688,7 @@ elif page == "🤖 AI Assistant":
                     if msg.get("question"):
                         st.markdown(f"**Question interpreted as:** {msg['question']}")
                         st.divider()
+                    _edited_df = None
                     for i, entry in enumerate(msg.get("trace", [])):
                         st.markdown(
                             f'<p style="margin:4px 0"><span style="color:#94a3b8;font-weight:600;font-size:0.88rem">Tool selected:</span>&nbsp;&nbsp;'
@@ -1737,12 +1738,21 @@ elif page == "🤖 AI Assistant":
                                     st.session_state[_edit_key] = True
                                     st.rerun()
                             if _result_key in st.session_state:
-                                st.markdown("**Edited query result:**")
-                                dark_table(st.session_state[_result_key])
-                        st.markdown(f"**Records returned:** {entry.get('records_returned', '?')}")
+                                _edited_df = st.session_state[_result_key]
+                            else:
+                                _edited_df = None
+                        else:
+                            _edited_df = None
+                        if _edited_df is not None:
+                            st.markdown(f"**Records returned:** {len(_edited_df)}")
+                        else:
+                            st.markdown(f"**Records returned:** {entry.get('records_returned', '?')}")
                         if i < len(msg.get("trace", [])) - 1:
                             st.divider()
-                    if msg.get("data"):
+                    if _edited_df is not None:
+                        st.markdown("**Result data:**")
+                        dark_table(_edited_df)
+                    elif msg.get("data"):
                         st.markdown("**Result data:**")
                         dark_table(pd.DataFrame(msg["data"]))
 
