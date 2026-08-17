@@ -1852,9 +1852,11 @@ elif page == "🤖 AI Assistant":
                     "This applies when the user asks about any month outside Jan–Jun 2024 (e.g. Jul 2024, Jan 2025, any 2023 date), "
                     "or any team/rep that does not exist in the data. "
 
-                    "If data reveals a team or rep performing below the platform average or below quota < 70%, "
+                    "AI SUGGESTION: After answering, scan all the data returned. "
+                    "If any reps or teams in the result are underperforming (quota < 70% or clearly below the rest of the group), "
                     "end your response with a BLANK LINE followed by '💡 AI Suggestion (not a fact):' on its own line, "
-                    "then one specific actionable coaching recommendation. Always put the suggestion on a separate paragraph."
+                    "then one specific actionable coaching recommendation targeting THOSE underperforming reps or teams — never the top performer. "
+                    "If no one in the result is underperforming, skip the suggestion entirely."
                 )
 
                 # Build messages with last 6 turns of history for follow-up chaining
