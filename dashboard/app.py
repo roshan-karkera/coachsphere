@@ -1288,7 +1288,7 @@ elif page == "📋 Metric Definitions":
 elif page == "🤖 AI Assistant":
     st.markdown(f"""<div class="page-hero">
         <div class="hero-title">{_icon('robot_avatar.png')} AI Assistant</div>
-        <div class="hero-sub">Ask any question in plain English · Powered by Groq · Llama 3.3 70B · Agentic tool-calling with trace</div>
+        <div class="hero-sub">Ask any question in plain English · Powered by Groq · GPT-OSS 120B · Agentic tool-calling with trace</div>
     </div>""", unsafe_allow_html=True)
 
     if not GROQ_API_KEY:
@@ -1879,7 +1879,7 @@ elif page == "🤖 AI Assistant":
                 # ── Agentic loop (max 5 iterations) ──────────────────────
                 for _ in range(5):
                     response = client.chat.completions.create(
-                        model="qwen/qwen3.6-27b",
+                        model="openai/gpt-oss-120b",
                         messages=messages,
                         tools=TOOLS,
                         tool_choice="auto",
@@ -1958,7 +1958,7 @@ elif page == "🤖 AI Assistant":
                         retry_trace_entries = []
                         for _ in range(5):
                             retry_resp = client.chat.completions.create(
-                                model="qwen/qwen3.6-27b",
+                                model="openai/gpt-oss-120b",
                                 messages=retry_messages,
                                 tools=TOOLS,
                                 tool_choice="auto",
