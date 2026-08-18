@@ -2129,11 +2129,20 @@ elif page == "🔌 MCP Server":
                 elif param == "metric":
                     params["metric"] = st.selectbox("metric", metrics_list, key=f"pp_metric_{sel}")
                 elif param == "teams":
-                    params["teams"] = st.text_input("teams (comma-sep or 'all')", "all", key=f"pp_teams_{sel}")
+                    team_opts = ["Enterprise", "SMB", "EMEA", "APAC"]
+                    selected_teams = st.multiselect("teams", team_opts, default=team_opts, key=f"pp_teams_{sel}")
+                    params["teams"] = ",".join(selected_teams) if selected_teams and len(selected_teams) < len(team_opts) else "all"
                 elif param == "rep_name":
                     params["rep_name"] = st.selectbox("rep_name", reps_list, key=f"pp_rep_{sel}")
                 elif param == "metric_name":
-                    params["metric_name"] = st.text_input("metric_name", "engagement", key=f"pp_mname_{sel}")
+                    metric_name_list = [
+                        "session_engagement_score",
+                        "skill_progression_rate",
+                        "communication_quality_score",
+                        "business_impact_index",
+                        "coaching_effectiveness_score",
+                    ]
+                    params["metric_name"] = st.selectbox("metric_name", metric_name_list, key=f"pp_mname_{sel}")
 
     param_str = ", ".join(f'{k}="{v}"' for k, v in params.items())
     with st.expander("MCP tool call", expanded=True):
