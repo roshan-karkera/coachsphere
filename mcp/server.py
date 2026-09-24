@@ -48,6 +48,7 @@ def _q(sql: str) -> list[dict]:
 
 
 # ── MCP server ─────────────────────────────────────────────────────────────────
+_port = int(os.environ.get("PORT", 8000))
 mcp = FastMCP(
     name="CoachSphere",
     instructions=(
@@ -56,6 +57,8 @@ mcp = FastMCP(
         "Always call a tool to retrieve data before answering — never guess numbers. "
         "After getting data, give a concise answer with specific figures."
     ),
+    host="0.0.0.0",
+    port=_port,
 )
 
 
@@ -334,4 +337,5 @@ def explain_metric_definition(metric_name: str) -> list[dict]:
 
 # ── Entry point ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    mcp.run()
+    transport = os.environ.get("MCP_TRANSPORT", "stdio")
+    mcp.run(transport=transport)
