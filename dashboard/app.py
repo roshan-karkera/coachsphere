@@ -520,7 +520,7 @@ def dark_table(df):
     for idx, row in df.iterrows():
         bg = "rgba(15,31,53,0.6)" if idx % 2 == 0 else "rgba(10,22,40,0.6)"
         cells = "".join(
-            f'<td style="padding:7px 14px;color:#cbd5e1;font-size:0.82rem;'
+            f'<td style="padding:7px 14px;color:#ffffff;font-size:0.82rem;'
             f'border-bottom:1px solid rgba(56,189,248,0.06);white-space:nowrap">{v}</td>'
             for v in row
         )
