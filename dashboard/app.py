@@ -1834,8 +1834,14 @@ elif page == "🤖 AI Assistant":
 
                 from agent.graph import _agent as _lg_agent
 
+                # Build last 6 turns of history for follow-up chaining
+                _history = []
+                for _h in st.session_state.chat_history[:-1][-6:]:
+                    if _h["role"] in ("user", "assistant"):
+                        _history.append({"role": _h["role"], "content": _h["content"]})
+
                 _lg_result = _lg_agent.invoke(
-                    {"messages": [{"role": "user", "content": user_q}]}
+                    {"messages": _history + [{"role": "user", "content": user_q}]}
                 )
 
                 # ── Parse message history to rebuild trace ────────────────
