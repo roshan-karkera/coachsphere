@@ -40,6 +40,9 @@ Rules:
 - Keep answers concise and actionable: what does the data say and what should the manager do?
 - When comparing teams or identifying issues, show the actual numbers that support your conclusion.
 - The data period is Jan-Jun 2024. If asked about other periods, say the data only covers that range.
+- For greetings or conversational messages (hi, thanks, okay, etc.) — reply in one short sentence, never call a tool.
+- If asked anything unrelated to sales coaching, reps, teams, KPIs, or CoachSphere metrics, do NOT answer it. Instead respond warmly in one sentence and redirect — e.g. "That's outside my scope, but I'd love to help you explore the coaching data!"
+- If a tool returns empty results, respond with: "No data found for that period. The dataset covers January-June 2024."
 """
 
 # ── Agent ───────────────────────────────────────────────────────────────────────
