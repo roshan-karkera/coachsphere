@@ -21,6 +21,8 @@ CoachSphere is a fictional B2B SaaS company that coaches enterprise sales teams 
 
 ## Architecture
 
+![CoachSphere Architecture](docs/architecture.svg)
+
 ```
 Data Source (Python / Faker)
         │
@@ -42,17 +44,15 @@ Metrics Layer (SQL Views — version controlled)
   ├── v_coaching_effectiveness    ← coaching_effectiveness_score v2.0
   └── v_team_summary              ← team-level rollup
         │
-        ├──────────────────────────────────┐
-        ▼                                  ▼
-Streamlit Dashboard (Plotly)       MCP Server (FastMCP)
-  ├── 📊 Overview KPIs               10 analytics tools exposed
-  ├── 👥 Team Analytics              via Model Context Protocol
-  ├── 🧠 Skill Progression           ← Claude Desktop connects here
-  ├── 📅 Session Insights
-  ├── 🔍 Rep Deep Dive
-  ├── 📋 Metric Definitions
-  ├── 🤖 AI Assistant (Groq + Llama 3.3 70B)
-  └── 🔌 MCP Server status + live demo
+        ├──────────────────┬──────────────────────┐
+        ▼                  ▼                      ▼
+Streamlit Dashboard  MCP Server (FastMCP)   LangGraph Agent  ← NEW
+  ├── Overview KPIs    10 tools via MCP      ReAct loop
+  ├── Team Analytics   SSE on Render         Groq Llama 3.3 70B
+  ├── Skill Progress   Claude Desktop        10 LangChain tools
+  ├── Rep Deep Dive    Any MCP client        Python API + CLI
+  ├── Metric Defs
+  └── AI Assistant
 ```
 
 ---
@@ -67,8 +67,9 @@ Streamlit Dashboard (Plotly)       MCP Server (FastMCP)
 | Analytics | Pandas, NumPy |
 | Visualisation | Plotly, Streamlit |
 | AI Assistant | Groq API · Llama 3.3 70B · agentic tool-calling |
-| MCP Server | FastMCP (`mcp[cli]`) · stdio transport |
-| MCP Client | Claude Desktop |
+| MCP Server | FastMCP (`mcp[cli]`) · SSE transport · deployed on Render |
+| MCP Client | Claude Desktop · any MCP-compatible client |
+| Agent | LangGraph · `create_react_agent` · langchain-groq · 10 LangChain tools |
 
 ---
 
