@@ -32,7 +32,7 @@ except Exception:
     load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
-from groq import Groq
+# Groq is accessed via LangGraph agent (agent/graph.py) — not imported directly here
 
 import subprocess
 
@@ -1288,7 +1288,7 @@ elif page == "📋 Metric Definitions":
 elif page == "🤖 AI Assistant":
     st.markdown(f"""<div class="page-hero">
         <div class="hero-title">{_icon('robot_avatar.png')} AI Assistant</div>
-        <div class="hero-sub">Ask any question in plain English · Powered by Groq · GPT-OSS 120B · Agentic tool-calling with trace</div>
+        <div class="hero-sub">Ask any question in plain English · Powered by LangGraph + Groq · llama-3.3-70b · ReAct agent with trace</div>
     </div>""", unsafe_allow_html=True)
 
     if not GROQ_API_KEY:
@@ -1810,139 +1810,66 @@ elif page == "🤖 AI Assistant":
 
         with st.spinner("Agent thinking..."):
             try:
-                client = Groq(api_key=GROQ_API_KEY)
+                # ── LangGraph ReAct agent ─────────────────────────────────
+                # Import lazily so the dashboard still loads if langgraph is
+                # not installed (shows an error in the chat instead of crashing).
+                import sys as _sys
+                import os as _os
+                _agent_dir = str(Path(__file__).parent.parent)
+                if _agent_dir not in _sys.path:
+                    _sys.path.insert(0, _agent_dir)
 
-                SYSTEM = (
-                    "You are CoachSphere's AI analytics agent for a sales coaching platform. "
-                    "You have tools to query real coaching data (Jan–Jun 2024). "
-                    "ALWAYS call a tool to look up data before answering — never guess numbers. "
-                    "Teams: Enterprise, SMB, EMEA, APAC. After getting data, give a concise answer with specific numbers. "
+                from agent.graph import _agent as _lg_agent
 
-                    "MONTH PARSING — do this FIRST before interpreting anything else: "
-                    "Convert any month reference to YYYY-MM format. Common abbreviations and typos to recognise: "
-                    "jan/jn → 2024-01, feb/fb → 2024-02, mar/mr → 2024-03, "
-                    "apr/ap/apu/aprl → 2024-04, may → 2024-05, jun/jn/june → 2024-06. "
-                    "If the user writes a 2-digit year like '24', treat it as 2024. "
-                    "Examples: 'apr 24' → month=2024-04, 'apu 24' → month=2024-04 (typo for apr), "
-                    "'jun 24' → month=2024-06, 'march' → month=2024-03. "
-                    "NEVER interpret a 3-letter month abbreviation (jan/feb/mar/apr/may/jun) as a team name. "
-                    "Teams are only: Enterprise, SMB, EMEA, APAC. "
-                    "If no month is specified, use month='all'. "
-
-                    "IMPORTANT tool selection rules: "
-                    "- Use get_top_by_metric for ANY question about ranking reps by a specific metric: "
-                    "  'most deals', 'highest win rate', 'best quota attainment', 'most deals closed', etc. "
-                    "  Pass the metric name: deals_closed, quota_pct, win_rate_pct, effectiveness, engagement, skill_score. "
-                    "- Use get_top_performers only when asked for top reps by overall coaching effectiveness. "
-                    "- Use get_rep_profile only when you already know a rep's name and want their full history. "
-                    "  Do NOT call get_rep_profile just to enrich results from another tool. "
-                    "- Use identify_underperforming_segments when asked about struggling, weak, at-risk, underperforming, or lowest-performing teams OR reps. "
-                    "- Use compare_skill_progression to compare skills across teams or over time. "
-                    "- Use explain_metric_definition when asked how a metric is defined or calculated. "
-                    "- Never say a rep was 'not found' if a tool returned data — report what you found. "
-                    "- Call only ONE tool per question unless a second tool is truly necessary. "
-                    "- NEVER include markdown tables, bullet lists, or raw data in your text response. "
-                    "  The data is already displayed separately. Just write 1-2 plain sentences summarising the key insight. "
-                    "- For greetings, thanks, acknowledgements, or any non-data message "
-                    "(e.g. 'hi', 'thanks', 'okay', 'good', 'great', 'cool', 'nice', 'got it', 'okay that's good'), "
-                    "NEVER call a tool. Just reply conversationally in one short sentence. "
-
-                    "EMPTY / OUT-OF-RANGE DATA HANDLING — if a tool returns an empty result or no rows: "
-                    "ALWAYS respond with exactly: "
-                    "'No data found for that period. The dataset covers January–June 2024.' "
-                    "Do NOT say 'could not be found', do NOT make up data, do NOT suggest alternatives. "
-                    "This applies when the user asks about any month outside Jan–Jun 2024 (e.g. Jul 2024, Jan 2025, any 2023 date), "
-                    "or any team/rep that does not exist in the data. "
-
-                    "SCOPE RESTRICTION — this is critical: "
-                    "You are a specialist analytics agent for CoachSphere. "
-                    "If the user asks anything unrelated to sales coaching, reps, teams, KPIs, or CoachSphere metrics, "
-                    "do NOT answer it. Instead, respond warmly in one sentence acknowledging the question "
-                    "and redirecting — for example: "
-                    "'That's outside my scope, but I'd love to help you explore the coaching data — try asking about team performance or rep skill scores!' "
-                    "Keep the tone helpful and product-focused, never robotic or blunt. "
-
-                    "AI SUGGESTION: After answering, scan all the data returned. "
-                    "If any reps or teams in the result are underperforming (quota < 70% or clearly below the rest of the group), "
-                    "end your response with a BLANK LINE followed by '💡 AI Suggestion (not a fact):' on its own line, "
-                    "then one specific actionable coaching recommendation targeting THOSE underperforming reps or teams — never the top performer. "
-                    "If no one in the result is underperforming, skip the suggestion entirely."
+                _lg_result = _lg_agent.invoke(
+                    {"messages": [{"role": "user", "content": user_q}]}
                 )
 
-                # Build messages with last 6 turns of history for follow-up chaining
-                history_msgs = []
-                prior = st.session_state.chat_history[:-1]  # exclude current user msg
-                for h in prior[-6:]:
-                    if h["role"] in ("user", "assistant"):
-                        history_msgs.append({"role": h["role"], "content": h["content"]})
-
-                messages = (
-                    [{"role": "system", "content": SYSTEM}]
-                    + history_msgs
-                    + [{"role": "user", "content": user_q}]
-                )
-
+                # ── Parse message history to rebuild trace ────────────────
                 tools_used    = []
-                last_data     = None
                 trace_entries = []
+                last_data     = None
+                final_answer  = ""
+                _tc_map       = {}   # tool_call_id -> {name, args}
 
-                # ── Agentic loop (max 5 iterations) ──────────────────────
-                for _ in range(5):
-                    response = client.chat.completions.create(
-                        model="openai/gpt-oss-120b",
-                        messages=messages,
-                        tools=TOOLS,
-                        tool_choice="auto",
-                        temperature=0
-                    )
-                    resp_msg = response.choices[0].message
-
-                    if resp_msg.tool_calls:
-                        # Add assistant turn with tool_calls
-                        messages.append({
-                            "role": "assistant",
-                            "content": resp_msg.content or "",
-                            "tool_calls": [
-                                {
-                                    "id": tc.id,
-                                    "type": "function",
-                                    "function": {
-                                        "name": tc.function.name,
-                                        "arguments": tc.function.arguments
-                                    }
-                                } for tc in resp_msg.tool_calls
-                            ]
+                for _msg in _lg_result["messages"]:
+                    # AIMessage with tool calls
+                    if hasattr(_msg, "tool_calls") and _msg.tool_calls:
+                        for _tc in _msg.tool_calls:
+                            _tc_map[_tc["id"]] = {
+                                "name": _tc["name"],
+                                "args": _tc["args"],
+                            }
+                    # ToolMessage (result of a tool call)
+                    elif hasattr(_msg, "tool_call_id") and _msg.tool_call_id:
+                        _info      = _tc_map.get(_msg.tool_call_id, {})
+                        _tool_name = _info.get("name", "unknown")
+                        _tool_args = _info.get("args", {})
+                        try:
+                            _rows = json.loads(_msg.content) if isinstance(_msg.content, str) else _msg.content
+                        except Exception:
+                            _rows = []
+                        _rows = _rows if isinstance(_rows, list) else []
+                        tools_used.append(_tool_name)
+                        last_data = _rows
+                        trace_entries.append({
+                            "tool":             _tool_name,
+                            "args":             _tool_args,
+                            "sql":              "",   # LangGraph executes tools internally
+                            "records_returned": len(_rows),
                         })
-                        # Execute each tool and feed results back
-                        for tc in resp_msg.tool_calls:
-                            fn_name      = tc.function.name
-                            fn_args      = json.loads(tc.function.arguments)
-                            _trace_entry = {"tool": fn_name, "args": fn_args, "sql": "", "records_returned": 0}
-                            result       = run_tool(fn_name, fn_args, _trace=_trace_entry)
-                            trace_entries.append(_trace_entry)
-                            tools_used.append(fn_name)
-                            last_data = result
-                            messages.append({
-                                "role":         "tool",
-                                "tool_call_id": tc.id,
-                                "content":      json.dumps(result)
-                            })
-                    else:
-                        # No more tool calls — final answer reached
-                        final_answer = (resp_msg.content or "").strip()
-                        if not final_answer:
-                            # Model returned empty content — force a summary response
-                            messages.append({"role": "assistant", "content": ""})
-                            messages.append({"role": "user", "content": "Based on the tool results above, please provide your answer now."})
-                            _forced = client.chat.completions.create(
-                                model="openai/gpt-oss-120b",
-                                messages=messages,
-                                temperature=0
-                            )
-                            final_answer = (_forced.choices[0].message.content or "").strip() or "No answer generated."
-                        break
-                else:
-                    final_answer = "Agent reached maximum iterations without a final answer."
+                    # Final AIMessage (no tool calls = the answer)
+                    elif (
+                        hasattr(_msg, "content")
+                        and isinstance(_msg.content, str)
+                        and _msg.content.strip()
+                        and not (hasattr(_msg, "tool_calls") and _msg.tool_calls)
+                        and getattr(_msg, "type", "") == "ai"
+                    ):
+                        final_answer = _msg.content.strip()
+
+                if not final_answer:
+                    final_answer = "No answer generated."
 
                 st.session_state.chat_history.append({
                     "role":       "assistant",
@@ -1953,89 +1880,26 @@ elif page == "🤖 AI Assistant":
                     "question":   user_q,
                 })
 
+            except ImportError:
+                st.session_state.chat_history.append({
+                    "role":    "assistant",
+                    "content": (
+                        "LangGraph is not installed. Run:\n\n"
+                        "```\npip install langgraph langchain-groq langchain-core\n```"
+                    ),
+                    "tools_used": [], "data": None, "trace": [], "question": user_q,
+                })
             except Exception as e:
                 err_str = str(e)
-                if 'tool_use_failed' in err_str or 'failed_generation' in err_str:
-                    # Model generated a malformed tool call (usually due to typos/abbreviations).
-                    # Retry once with an explicit instruction to rephrase the query first.
-                    try:
-                        retry_messages = (
-                            [{"role": "system", "content": SYSTEM}]
-                            + history_msgs
-                            + [{
-                                "role": "user",
-                                "content": (
-                                    f"The user asked: '{user_q}'. "
-                                    "This may contain typos or abbreviations. "
-                                    "First interpret what they most likely meant "
-                                    "(e.g. 'mont of jan' = January 2024, 'top team' = best performing team), "
-                                    "then call the appropriate tool to answer it."
-                                )
-                            }]
-                        )
-                        retry_tools_used    = []
-                        retry_last_data     = None
-                        retry_trace_entries = []
-                        for _ in range(5):
-                            retry_resp = client.chat.completions.create(
-                                model="openai/gpt-oss-120b",
-                                messages=retry_messages,
-                                tools=TOOLS,
-                                tool_choice="auto",
-                                temperature=0
-                            )
-                            retry_msg = retry_resp.choices[0].message
-                            if retry_msg.tool_calls:
-                                retry_messages.append({
-                                    "role": "assistant",
-                                    "content": retry_msg.content or "",
-                                    "tool_calls": [
-                                        {"id": tc.id, "type": "function",
-                                         "function": {"name": tc.function.name,
-                                                      "arguments": tc.function.arguments}}
-                                        for tc in retry_msg.tool_calls
-                                    ]
-                                })
-                                for tc in retry_msg.tool_calls:
-                                    fn_name      = tc.function.name
-                                    fn_args      = json.loads(tc.function.arguments)
-                                    _te          = {"tool": fn_name, "args": fn_args, "sql": "", "records_returned": 0}
-                                    result       = run_tool(fn_name, fn_args, _trace=_te)
-                                    retry_trace_entries.append(_te)
-                                    retry_tools_used.append(fn_name)
-                                    retry_last_data = result
-                                    retry_messages.append({
-                                        "role": "tool", "tool_call_id": tc.id,
-                                        "content": json.dumps(result)
-                                    })
-                            else:
-                                final_answer = retry_msg.content or "No answer generated."
-                                break
-                        else:
-                            final_answer = "I understood your question but couldn't retrieve the data. Please try rephrasing."
-                        st.session_state.chat_history.append({
-                            "role":       "assistant",
-                            "content":    final_answer,
-                            "tools_used": retry_tools_used,
-                            "data":       retry_last_data,
-                            "trace":      retry_trace_entries,
-                            "question":   user_q,
-                        })
-                    except Exception:
-                        st.session_state.chat_history.append({
-                            "role":    "assistant",
-                            "content": "I couldn't interpret that query. Try: *'Which team performed best in January 2024?'*",
-                            "tools_used": [], "data": None, "trace": [], "question": user_q,
-                        })
-                elif 'invalid_api_key' in err_str or '401' in err_str:
+                if "invalid_api_key" in err_str or "401" in err_str:
                     st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": "Invalid API key. Please check your Groq API key in Streamlit secrets.",
+                        "role":    "assistant",
+                        "content": "Invalid API key. Please check your GROQ_API_KEY in Streamlit secrets.",
                         "tools_used": [], "data": None, "trace": [], "question": user_q,
                     })
                 else:
                     st.session_state.chat_history.append({
-                        "role": "assistant",
+                        "role":    "assistant",
                         "content": f"Something went wrong: {err_str}",
                         "tools_used": [], "data": None, "trace": [], "question": user_q,
                     })
