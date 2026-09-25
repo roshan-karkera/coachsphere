@@ -23,7 +23,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 # ── LLM ────────────────────────────────────────────────────────────────────────
 # llama-3.3-70b-versatile is fast, free-tier friendly, and handles tool calls well
 _llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
+    model="openai/gpt-oss-120b",
     temperature=0,
 )
 
