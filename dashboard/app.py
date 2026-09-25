@@ -79,6 +79,19 @@ if 'cache_cleared' not in st.session_state:
 # ── Dark theme overrides ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
+/* ── Markdown table — white text ─────────────────────────── */
+[data-testid="stMarkdownContainer"] table { border-collapse: collapse; width: 100%; }
+[data-testid="stMarkdownContainer"] th {
+    color: #38bdf8 !important; font-size: 0.82rem; font-weight: 600;
+    padding: 8px 14px; border-bottom: 1px solid rgba(56,189,248,0.25);
+    text-align: left; background: rgba(15,31,53,0.9);
+}
+[data-testid="stMarkdownContainer"] td {
+    color: #ffffff !important; font-size: 0.82rem;
+    padding: 7px 14px; border-bottom: 1px solid rgba(56,189,248,0.08);
+}
+[data-testid="stMarkdownContainer"] tr:nth-child(even) td { background: rgba(15,31,53,0.4); }
+
 /* ── Full dark theme ─────────────────────────────────────── */
 
 [data-testid="stAppViewContainer"],
