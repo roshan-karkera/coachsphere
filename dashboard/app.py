@@ -1978,12 +1978,14 @@ elif page == "🔌 MCP Server":
         {"name": "compare_skill_progression",        "emoji": "📊", "desc": "Skill trends across teams over time",        "params": ["teams", "skill"]},
         {"name": "identify_underperforming_segments","emoji": "⚠️",  "desc": "Teams performing below platform average",   "params": ["month"]},
         {"name": "explain_metric_definition",        "emoji": "📋", "desc": "KPI formula, description, and version",      "params": ["metric_name"]},
+        {"name": "get_team_roster",                  "emoji": "👤", "desc": "All reps in a team with role and region",    "params": ["team"]},
+        {"name": "get_manager_details",              "emoji": "🧑‍💼", "desc": "Manager names with latest team KPIs",       "params": ["team"]},
     ]
 
     if "mcp_selected" not in st.session_state:
         st.session_state.mcp_selected = "get_top_performers"
 
-    st.markdown('<div class="section-title">10 Exposed Tools — Click to Run</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">12 Exposed Tools — Click to Run</div>', unsafe_allow_html=True)
     col_l, col_r = st.columns(2)
     for i, tool in enumerate(TOOLS_META):
         is_sel = (st.session_state.mcp_selected == tool["name"])
@@ -2124,6 +2126,16 @@ elif page == "🔌 MCP Server":
         mn = params.get("metric_name","engagement")
         result_df = query(f"""SELECT metric_name, display_name, description, formula, unit, version
             FROM metric_definitions WHERE metric_name LIKE '%{mn}%' OR display_name LIKE '%{mn}%' LIMIT 3""")
+    elif sel == "get_team_roster":
+        result_df = query(f"""SELECT name, team, role, region, hire_date
+            FROM users WHERE role != 'Team Lead' {tf} ORDER BY team, name""")
+    elif sel == "get_manager_details":
+        result_df = query(f"""SELECT u.name AS manager_name, ts.team, ts.period_month,
+            ts.active_reps, ROUND(ts.avg_engagement,3) AS avg_engagement,
+            ROUND(ts.avg_effectiveness,3) AS avg_effectiveness
+            FROM v_team_summary ts JOIN users u ON u.team=ts.team AND u.role='Team Lead'
+            WHERE ts.period_month=(SELECT MAX(period_month) FROM v_team_summary) {tf.replace('team','ts.team')}
+            ORDER BY ts.avg_effectiveness DESC""")
 
     if result_df is not None and not result_df.empty:
         col_cfg = {}
