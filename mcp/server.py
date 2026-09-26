@@ -335,6 +335,52 @@ def explain_metric_definition(metric_name: str) -> list[dict]:
     """)
 
 
+# ── Tool 11: Team Roster ───────────────────────────────────────────────────────
+@mcp.tool()
+def get_team_roster(team: str = "all") -> list[dict]:
+    """
+    List all sales reps in a team with their role, region, and hire date.
+    Use when asked for names of people in a team, who is on a team, or to list team members.
+
+    Args:
+        team: Team name — Enterprise, SMB, EMEA, APAC, or 'all' for everyone.
+    """
+    tf = f"AND team = '{team}'" if team and team != "all" else ""
+    return _q(f"""
+        SELECT name, team, role, region, hire_date
+        FROM users
+        WHERE role != 'Team Lead' {tf}
+        ORDER BY team, name
+    """)
+
+
+# ── Tool 12: Manager Details ───────────────────────────────────────────────────
+@mcp.tool()
+def get_manager_details(team: str = "all") -> list[dict]:
+    """
+    Get each team manager's name along with their team's latest performance summary.
+    Use when asked for details about managers, who leads each team, or manager performance.
+
+    Args:
+        team: Team name — Enterprise, SMB, EMEA, APAC, or 'all' for all managers.
+    """
+    tf = f"AND ts.team = '{team}'" if team and team != "all" else ""
+    return _q(f"""
+        SELECT
+            u.name        AS manager_name,
+            ts.team,
+            ts.period_month,
+            ts.active_reps,
+            ROUND(ts.avg_engagement, 3)    AS avg_engagement,
+            ROUND(ts.avg_effectiveness, 3) AS avg_effectiveness
+        FROM v_team_summary ts
+        JOIN users u ON u.team = ts.team AND u.role = 'Team Lead'
+        WHERE ts.period_month = (SELECT MAX(period_month) FROM v_team_summary)
+        {tf}
+        ORDER BY ts.avg_effectiveness DESC
+    """)
+
+
 # ── Entry point ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     transport = os.environ.get("MCP_TRANSPORT", "stdio")

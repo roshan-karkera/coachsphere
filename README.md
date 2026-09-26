@@ -152,7 +152,7 @@ See `mcp/SETUP.md` for full instructions and troubleshooting.
 
 ---
 
-## 10 MCP Tools
+## 12 MCP Tools
 
 | Tool | What it does |
 |---|---|
@@ -166,6 +166,8 @@ See `mcp/SETUP.md` for full instructions and troubleshooting.
 | `compare_skill_progression` | Skill trends across teams over time |
 | `identify_underperforming_segments` | Teams performing below platform average |
 | `explain_metric_definition` | How any KPI is defined, its formula, unit, and version |
+| `get_team_roster` | All sales reps in a team with role, region, and hire date |
+| `get_manager_details` | Team manager names with their team's latest KPI summary |
 
 ---
 

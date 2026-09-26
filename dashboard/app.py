@@ -1841,17 +1841,12 @@ elif page == "🤖 AI Assistant":
                     if _h["role"] in ("user", "assistant"):
                         _history.append({"role": _h["role"], "content": _h["content"]})
 
-                # Inject VP-only context: team manager names
+                # Inject role context so agent knows who is asking
                 _vp_context = []
                 if _mgr.get("team") == "VP Sales":
-                    _mgr_info = "\n".join(
-                        f"- {team}: {name}"
-                        for team, name in TEAM_MANAGERS.items()
-                    )
                     _vp_context = [SystemMessage(content=(
                         f"The logged-in user is {_mgr['name']} (VP Sales). "
-                        f"You have access to the following team manager names:\n{_mgr_info}\n"
-                        "Use this to answer questions like 'who manages EMEA?' without calling a tool."
+                        "They have access to all teams. For manager names or details, use the get_manager_details tool."
                     ))]
 
                 _lg_result = _lg_agent.invoke(
