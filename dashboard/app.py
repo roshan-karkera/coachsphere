@@ -1832,6 +1832,7 @@ elif page == "🤖 AI Assistant":
                 if _agent_dir not in _sys.path:
                     _sys.path.insert(0, _agent_dir)
 
+                _os.environ["GROQ_API_KEY"] = GROQ_API_KEY
                 from agent.graph import _agent as _lg_agent
                 from langchain_core.messages import SystemMessage
 
@@ -1922,7 +1923,7 @@ elif page == "🤖 AI Assistant":
                 if "invalid_api_key" in err_str or "401" in err_str:
                     st.session_state.chat_history.append({
                         "role":    "assistant",
-                        "content": "Invalid API key. Please check your GROQ_API_KEY in Streamlit secrets.",
+                        "content": f"Auth error — full message: {err_str}",
                         "tools_used": [], "data": None, "trace": [], "question": user_q,
                     })
                 else:
