@@ -1835,9 +1835,10 @@ elif page == "🤖 AI Assistant":
                 if _agent_dir not in _sys.path:
                     _sys.path.insert(0, _agent_dir)
 
-                # Force fresh agent with current key (avoid stale module cache)
-                if "agent.graph" in _sys.modules:
-                    del _sys.modules["agent.graph"]
+                # Force fresh agent with current key and tools (avoid stale module cache)
+                for _mod in ["agent.graph", "agent.tools"]:
+                    if _mod in _sys.modules:
+                        del _sys.modules[_mod]
                 from agent.graph import _agent as _lg_agent
                 from langchain_core.messages import SystemMessage
 
