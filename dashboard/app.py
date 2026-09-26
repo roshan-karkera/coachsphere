@@ -32,6 +32,9 @@ except Exception:
     load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
+# Must set in os.environ NOW so ChatGroq() picks it up when agent.graph is imported
+os.environ["GROQ_API_KEY"] = GROQ_API_KEY
+
 # Groq is accessed via LangGraph agent (agent/graph.py) — not imported directly here
 
 import subprocess
@@ -1832,7 +1835,6 @@ elif page == "🤖 AI Assistant":
                 if _agent_dir not in _sys.path:
                     _sys.path.insert(0, _agent_dir)
 
-                _os.environ["GROQ_API_KEY"] = GROQ_API_KEY
                 from agent.graph import _agent as _lg_agent
                 from langchain_core.messages import SystemMessage
 
