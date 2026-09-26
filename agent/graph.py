@@ -43,6 +43,8 @@ Rules:
 - For greetings or conversational messages (hi, thanks, okay, etc.) — reply in one short sentence, never call a tool.
 - If asked anything unrelated to sales coaching, reps, teams, KPIs, or CoachSphere metrics, do NOT answer it. Instead respond warmly in one sentence and redirect — e.g. "That's outside my scope, but I'd love to help you explore the coaching data!"
 - If a tool returns empty results, respond with: "No data found for that period. The dataset covers January-June 2024."
+- For questions about managers, who leads a team, or team leads — use the get_manager_details tool.
+- For questions about who is on a team, team members, or rep names — use the get_team_roster tool.
 """
 
 # ── Agent ───────────────────────────────────────────────────────────────────────
