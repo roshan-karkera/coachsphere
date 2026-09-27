@@ -1848,16 +1848,37 @@ elif page == "🤖 AI Assistant":
                     if _h["role"] in ("user", "assistant"):
                         _history.append({"role": _h["role"], "content": _h["content"]})
 
-                # Inject role context so agent knows who is asking
-                _vp_context = []
-                if _mgr.get("team") == "VP Sales":
-                    _vp_context = [SystemMessage(content=(
-                        f"The logged-in user is {_mgr['name']} (VP Sales). "
-                        "They have access to all teams. For manager names or details, use the get_manager_details tool."
-                    ))]
+                # Inject role-based context and access restrictions
+                _user_team = _mgr.get("team", "")
+                _user_name = _mgr.get("name", "")
+                # Determine role from team (MANAGERS dict has no role field)
+                _is_vp       = (_user_team == "VP Sales")
+                _is_teamlead = (_user_team in ALL_TEAMS)  # all non-VP logins are Team Leads
+
+                if _is_vp:
+                    _role_ctx = SystemMessage(content=(
+                        f"The logged-in user is {_user_name} (VP Sales). "
+                        "They have access to all teams and all managers. "
+                        "For manager names or details, use the get_manager_details tool. "
+                        "For team rosters, use the get_team_roster tool."
+                    ))
+                elif _is_teamlead:
+                    _role_ctx = SystemMessage(content=(
+                        f"The logged-in user is {_user_name}, Team Lead of the {_user_team} team. "
+                        f"They can ONLY see data for the {_user_team} team. "
+                        f"Always pass team='{_user_team}' when calling any tool. "
+                        "If the user asks about other teams, other managers, or any cross-team data, "
+                        f"do NOT call a tool. Instead reply: 'You have access to {_user_team} team data only. Please ask questions about your own team.'"
+                    ))
+                else:
+                    _role_ctx = SystemMessage(content=(
+                        f"The logged-in user is {_user_name} in the {_user_team} team. "
+                        f"They can ONLY access {_user_team} team data. "
+                        "Do not show data about other teams."
+                    ))
 
                 _lg_result = _lg_agent.invoke(
-                    {"messages": _vp_context + _history + [{"role": "user", "content": user_q}]}
+                    {"messages": [_role_ctx] + _history + [{"role": "user", "content": user_q}]}
                 )
 
                 # ── Parse message history to rebuild trace ────────────────
