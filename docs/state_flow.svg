@@ -26,9 +26,10 @@
   <line x1="290" y1="84" x2="358" y2="84" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-blue)"/>
 
   <!-- ROW 2: SQLite DB -->
-  <rect x="245" y="195" width="390" height="58" rx="8" fill="#0f2035" stroke="#7dd3fc" stroke-width="2"/>
-  <text x="440" y="220" text-anchor="middle" fill="#7dd3fc" font-size="12" font-weight="700">coachsphere.db  (SQLite)</text>
-  <text x="440" y="238" text-anchor="middle" fill="#94a3b8" font-size="9.5">users · coaching_sessions · skill_assessments · session_feedback · business_metrics · metric_definitions</text>
+  <rect x="200" y="190" width="480" height="70" rx="8" fill="#0f2035" stroke="#7dd3fc" stroke-width="2"/>
+  <text x="440" y="215" text-anchor="middle" fill="#7dd3fc" font-size="12" font-weight="700">coachsphere.db  (SQLite)</text>
+  <text x="440" y="233" text-anchor="middle" fill="#94a3b8" font-size="10">users · coaching_sessions · skill_assessments</text>
+  <text x="440" y="250" text-anchor="middle" fill="#94a3b8" font-size="10">session_feedback · business_metrics · metric_definitions</text>
 
   <line x1="210" y1="110" x2="300" y2="194" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-blue)" stroke-dasharray="4,3"/>
   <line x1="440" y1="110" x2="440" y2="194" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-blue)" stroke-dasharray="4,3"/>
