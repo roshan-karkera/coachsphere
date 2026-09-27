@@ -45,7 +45,7 @@
   <!-- MCP Server -->
   <rect x="275" y="340" width="230" height="130" rx="8" fill="#ffedd5" stroke="#f97316" stroke-width="1.5"/>
   <text x="390" y="362" text-anchor="middle" font-size="12" font-weight="600" fill="#c2410c">MCP Server (FastMCP)</text>
-  <text x="390" y="380" text-anchor="middle" font-size="10" fill="#ea580c">10 analytics tools</text>
+  <text x="390" y="380" text-anchor="middle" font-size="10" fill="#ea580c">12 analytics tools</text>
   <text x="390" y="395" text-anchor="middle" font-size="10" fill="#ea580c">SSE transport (Render)</text>
   <text x="390" y="410" text-anchor="middle" font-size="10" fill="#ea580c">coachsphere-mcp.onrender.com</text>
   <text x="390" y="430" text-anchor="middle" font-size="10" font-weight="600" fill="#c2410c">Clients:</text>
