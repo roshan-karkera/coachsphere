@@ -67,7 +67,7 @@
 
   <rect x="520" y="455" width="300" height="58" rx="8" fill="#0f2035" stroke="#f59e0b" stroke-width="1.8"/>
   <text x="670" y="478" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">MCP Server (FastMCP)</text>
-  <text x="670" y="496" text-anchor="middle" fill="#94a3b8" font-size="9.5">10 tools · stdio transport</text>
+  <text x="670" y="496" text-anchor="middle" fill="#94a3b8" font-size="9.5">12 tools · SSE transport (Render)</text>
 
   <line x1="300" y1="369" x2="230" y2="454" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-green)"/>
   <line x1="580" y1="369" x2="640" y2="454" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-amber)"/>
@@ -75,7 +75,7 @@
   <!-- ROW 5: AI / MCP Clients -->
   <rect x="80" y="620" width="140" height="52" rx="8" fill="#0f2035" stroke="#e879f9" stroke-width="1.5"/>
   <text x="150" y="643" text-anchor="middle" fill="#e879f9" font-size="11" font-weight="700">AI Assistant</text>
-  <text x="150" y="659" text-anchor="middle" fill="#94a3b8" font-size="9">Groq · Llama 3.3 70B</text>
+  <text x="150" y="659" text-anchor="middle" fill="#94a3b8" font-size="9">LangGraph · Groq · gpt-oss-120b</text>
 
   <rect x="520" y="620" width="140" height="52" rx="8" fill="#0f2035" stroke="#f59e0b" stroke-width="1.5"/>
   <text x="590" y="643" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">Claude Desktop</text>
