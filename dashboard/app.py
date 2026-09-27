@@ -1304,7 +1304,7 @@ elif page == "📋 Metric Definitions":
 elif page == "🤖 AI Assistant":
     st.markdown(f"""<div class="page-hero">
         <div class="hero-title">{_icon('robot_avatar.png')} AI Assistant</div>
-        <div class="hero-sub">Ask any question in plain English · Powered by LangGraph + Groq · llama-3.3-70b · ReAct agent with trace</div>
+        <div class="hero-sub">Ask any question in plain English · Powered by LangGraph + Groq · gpt-oss-120b · ReAct agent with trace</div>
     </div>""", unsafe_allow_html=True)
 
     if not GROQ_API_KEY:
