@@ -46,13 +46,13 @@ Metrics Layer (SQL Views — version controlled)
         │
         ├──────────────────┬──────────────────────┐
         ▼                  ▼                      ▼
-Streamlit Dashboard  MCP Server (FastMCP)   LangGraph Agent  ← NEW
-  ├── Overview KPIs    10 tools via MCP      ReAct loop
-  ├── Team Analytics   SSE on Render         Groq Llama 3.3 70B
-  ├── Skill Progress   Claude Desktop        10 LangChain tools
-  ├── Rep Deep Dive    Any MCP client        Python API + CLI
-  ├── Metric Defs
-  └── AI Assistant
+Streamlit Dashboard  MCP Server (FastMCP)   LangGraph Agent
+  ├── Overview KPIs    12 tools via MCP      ReAct loop
+  ├── Team Analytics   SSE on Render         Groq gpt-oss-120b
+  ├── Skill Progress   Claude Desktop        12 LangChain tools
+  ├── Rep Deep Dive    Any MCP client        Role-based access
+  ├── Metric Defs      coachsphere-mcp       Python API + CLI
+  └── AI Assistant     .onrender.com
 ```
 
 ---
@@ -66,10 +66,10 @@ Streamlit Dashboard  MCP Server (FastMCP)   LangGraph Agent  ← NEW
 | Metrics layer | SQL Views (version-controlled) |
 | Analytics | Pandas, NumPy |
 | Visualisation | Plotly, Streamlit |
-| AI Assistant | Groq API · Llama 3.3 70B · agentic tool-calling |
-| MCP Server | FastMCP (`mcp[cli]`) · SSE transport · deployed on Render |
-| MCP Client | Claude Desktop · any MCP-compatible client |
-| Agent | LangGraph · `create_react_agent` · langchain-groq · 10 LangChain tools |
+| AI Assistant | LangGraph · `create_react_agent` · Groq `gpt-oss-120b` · role-based access |
+| MCP Server | FastMCP (`mcp[cli]`) · SSE transport · deployed on Render · 12 tools |
+| MCP Client | Claude Desktop · any MCP-compatible client · MCP Inspector |
+| Agent | LangGraph · `create_react_agent` · langchain-groq · 12 LangChain tools |
 
 ---
 
@@ -83,8 +83,12 @@ coachsphere/
 │   └── apply_metrics.py          # Creates all metric views + metric_definitions table
 ├── dashboard/
 │   └── app.py                    # Streamlit dashboard (8 pages, full dark theme)
+├── agent/
+│   ├── graph.py                  # LangGraph ReAct agent — create_react_agent + Groq
+│   ├── tools.py                  # 12 LangChain tools wrapping CoachSphere SQL views
+│   └── run.py                    # CLI runner for the agent
 ├── mcp/
-│   ├── server.py                 # FastMCP server — 10 analytics tools via MCP
+│   ├── server.py                 # FastMCP server — 12 analytics tools via MCP
 │   ├── requirements.txt          # mcp[cli]>=1.0.0
 │   ├── claude_desktop_config.json # Drop into Claude Desktop settings
 │   └── SETUP.md                  # 3-step MCP connection guide
@@ -125,7 +129,7 @@ streamlit run dashboard/app.py
 
 ## MCP Server — Connect to Claude Desktop
 
-CoachSphere exposes all 10 analytics tools via the [Model Context Protocol](https://modelcontextprotocol.io), so any MCP client (Claude Desktop, etc.) can query your coaching data in natural language.
+CoachSphere exposes all 12 analytics tools via the [Model Context Protocol](https://modelcontextprotocol.io), so any MCP client (Claude Desktop, etc.) can query your coaching data in natural language.
 
 ```bash
 # Install MCP library
@@ -145,7 +149,7 @@ Add the following to Claude Desktop → Settings → Developer → Edit Config:
 }
 ```
 
-Restart Claude Desktop — all 10 tools appear automatically. Try:
+Restart Claude Desktop — all 12 tools appear automatically. Try:
 > *"Who are the top 5 reps by coaching effectiveness in June 2024?"*
 
 See `mcp/SETUP.md` for full instructions and troubleshooting.
@@ -173,13 +177,15 @@ See `mcp/SETUP.md` for full instructions and troubleshooting.
 
 ## AI Assistant
 
-The **🤖 AI Assistant** page lets you query coaching data in plain English. It uses Groq's Llama 3.3 70B with agentic tool-calling:
+The **🤖 AI Assistant** page lets you query coaching data in plain English. It uses a **LangGraph ReAct agent** powered by Groq (`gpt-oss-120b`) with 12 tools:
 
 - Automatically selects the right tool and parameters from your question
+- Chains multiple tool calls for complex, multi-part questions
 - Handles typos and shorthand (e.g. `apu 24` → April 2024, `jsn` → June)
-- Shows a collapsible **Agent trace** with the tool called, filters applied, SQL executed, and result table
-- **✏️ Edit query** — click to modify the SQL inline and re-run it
+- Shows a collapsible **Agent trace** with the tool called, filters applied, and result table
+- **Role-based access** — Team Leads see only their team, VP Sales sees all teams
 - **✏️ Edit** on any user message — fix your question and re-send without retyping
+- Cross-question **conversation memory** — follows up on previous answers
 
 ---
 
