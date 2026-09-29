@@ -58,8 +58,8 @@
   <text x="712" y="346" text-anchor="middle" font-size="9" font-weight="700" fill="white">NEW</text>
   <text x="645" y="362" text-anchor="middle" font-size="12" font-weight="600" fill="#b91c1c">LangGraph Agent</text>
   <text x="645" y="380" text-anchor="middle" font-size="10" fill="#dc2626">ReAct loop (tool-calling)</text>
-  <text x="645" y="395" text-anchor="middle" font-size="10" fill="#dc2626">Groq · llama-3.3-70b</text>
-  <text x="645" y="410" text-anchor="middle" font-size="10" fill="#dc2626">10 LangChain tools</text>
+  <text x="645" y="395" text-anchor="middle" font-size="10" fill="#dc2626">Groq · gpt-oss-120b</text>
+  <text x="645" y="410" text-anchor="middle" font-size="10" fill="#dc2626">12 LangChain tools</text>
   <text x="645" y="430" text-anchor="middle" font-size="10" font-weight="600" fill="#b91c1c">Interfaces:</text>
   <text x="645" y="447" text-anchor="middle" font-size="10" fill="#dc2626">Python API · CLI runner</text>
   <text x="645" y="463" text-anchor="middle" font-size="10" fill="#dc2626">Multi-step chaining</text>
@@ -69,12 +69,12 @@
   <!-- Groq box -->
   <rect x="535" y="500" width="220" height="44" rx="8" fill="#fff1f2" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="5,3"/>
   <text x="645" y="519" text-anchor="middle" font-size="11" font-weight="600" fill="#dc2626">Groq Cloud API</text>
-  <text x="645" y="535" text-anchor="middle" font-size="10" fill="#ef4444">Llama 3.3 70B Versatile · temp 0</text>
+  <text x="645" y="535" text-anchor="middle" font-size="10" fill="#ef4444">gpt-oss-120b · temp 0</text>
 
   <!-- Shared note -->
   <rect x="230" y="500" width="280" height="36" rx="6" fill="#fff" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4,3"/>
   <text x="370" y="514" text-anchor="middle" font-size="10" fill="#888">Both MCP server and LangGraph agent</text>
-  <text x="370" y="528" text-anchor="middle" font-size="10" fill="#888">share the same 10 SQL query functions</text>
+  <text x="370" y="528" text-anchor="middle" font-size="10" fill="#888">share the same 12 SQL query functions</text>
 
   <!-- Legend -->
   <rect x="20" y="555" width="740" height="50" rx="6" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
