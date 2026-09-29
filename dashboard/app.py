@@ -692,7 +692,7 @@ if 'manager' not in st.session_state:
         '<div style="display:flex;align-items:center;gap:16px;">'
         f'<div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;base64,{svg_plug}" style="width:30px;height:30px;"></div>'
         '<div><div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">MCP Natural Language Queries</div>'
-        '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Query analytics from Claude Desktop</div></div>'
+        '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Query analytics from any MCP-compatible client</div></div>'
         '</div>'
 
         '</div></div>'
