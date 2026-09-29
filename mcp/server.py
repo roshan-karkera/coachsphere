@@ -1,6 +1,7 @@
 """
 CoachSphere MCP Server
-Exposes CoachSphere's 10 analytics tools to any MCP client (e.g. Claude Desktop).
+Exposes CoachSphere's 12 analytics tools to any MCP client (e.g. Claude Desktop).
+For testing MCP server on Web UI run: npx @modelcontextprotocol/inspector
 """
 
 import os
