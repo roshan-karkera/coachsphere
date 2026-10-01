@@ -740,8 +740,23 @@ with st.sidebar:
         </svg>
     </div>
     """, unsafe_allow_html=True)
-    st.markdown("## CoachSphere")
-    st.markdown("*AI Sales Coaching Analytics*")
+    st.markdown("""<style>
+    div[data-testid="stButton"] button#home-title-btn {
+        background:transparent!important;border:none!important;
+        padding:0!important;text-align:left!important;
+        box-shadow:none!important;color:inherit!important;
+    }
+    div[data-testid="stButton"] button#home-title-btn:hover {
+        background:rgba(56,189,248,0.08)!important;border-radius:8px!important;
+    }
+    </style>""", unsafe_allow_html=True)
+    st.markdown('<div id="home-title-btn">', unsafe_allow_html=True)
+    _home_clicked = st.button("**CoachSphere**\n\n*AI Sales Coaching Analytics*",
+                              use_container_width=True, key="_home_title_btn")
+    st.markdown('</div>', unsafe_allow_html=True)
+    if _home_clicked:
+        st.session_state['_nav_home'] = True
+        st.rerun()
     st.divider()
     _nav_pages = []
     if _mgr['team'] == 'VP Sales':
@@ -756,7 +771,10 @@ with st.sidebar:
         "🤖 AI Assistant",
         "🔌 MCP Server",
     ]
-    page = st.radio("Navigation", _nav_pages)
+    _nav_default = 0
+    if st.session_state.pop('_nav_home', False):
+        _nav_default = 0
+    page = st.radio("Navigation", _nav_pages, index=_nav_default)
     st.divider()
     sel_teams = ALL_TEAMS if _mgr['team'] == 'VP Sales' else [_mgr['team']]
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
