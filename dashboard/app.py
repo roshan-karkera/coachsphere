@@ -740,34 +740,18 @@ with st.sidebar:
         </svg>
     </div>
     """, unsafe_allow_html=True)
-    st.markdown("""<style>
-    .cs-home-btn button {
-        background:transparent!important;
-        border:none!important;
-        box-shadow:none!important;
-        padding:4px 8px!important;
-        width:100%!important;
-        border-radius:8px!important;
-        cursor:pointer!important;
-    }
-    .cs-home-btn button:hover {
-        background:rgba(56,189,248,0.1)!important;
-    }
-    .cs-home-btn button p {
-        font-size:1.45rem!important;
-        font-weight:700!important;
-        color:#e2e8f0!important;
-        line-height:1.2!important;
-        text-align:left!important;
-    }
-    </style>""", unsafe_allow_html=True)
-    st.markdown('<div class="cs-home-btn">', unsafe_allow_html=True)
-    _home_clicked = st.button("CoachSphere", use_container_width=True, key="_home_title_btn")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#94a3b8;font-size:0.85rem;font-style:italic;margin-top:-12px;padding-left:8px;">AI Sales Coaching Analytics</p>', unsafe_allow_html=True)
-    if _home_clicked:
-        st.session_state['_nav_home'] = True
-        st.rerun()
+    st.markdown("""
+    <div onclick="(function(){
+            var labels = document.querySelectorAll('[data-testid=stSidebar] .stRadio label');
+            if(labels.length > 0){ labels[0].click(); }
+         })()"
+         style="cursor:pointer;padding:6px 8px;border-radius:8px;transition:background 0.2s;margin-bottom:2px;"
+         onmouseover="this.style.background='rgba(56,189,248,0.1)'"
+         onmouseout="this.style.background='transparent'">
+        <h2 style="color:#e2e8f0;margin:0;font-size:1.4rem;font-weight:700;line-height:1.2;">CoachSphere</h2>
+        <p style="color:#94a3b8;font-style:italic;margin:2px 0 0 0;font-size:0.85rem;">AI Sales Coaching Analytics</p>
+    </div>
+    """, unsafe_allow_html=True)
     st.divider()
     _nav_pages = []
     if _mgr['team'] == 'VP Sales':
@@ -782,10 +766,7 @@ with st.sidebar:
         "🤖 AI Assistant",
         "🔌 MCP Server",
     ]
-    _nav_default = 0
-    if st.session_state.pop('_nav_home', False):
-        _nav_default = 0
-    page = st.radio("Navigation", _nav_pages, index=_nav_default)
+    page = st.radio("Navigation", _nav_pages)
     st.divider()
     sel_teams = ALL_TEAMS if _mgr['team'] == 'VP Sales' else [_mgr['team']]
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
