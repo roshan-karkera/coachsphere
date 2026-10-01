@@ -741,26 +741,29 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     st.markdown("""<style>
-    div[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"] {
+    .cs-home-btn button {
         background:transparent!important;
         border:none!important;
         box-shadow:none!important;
         padding:4px 8px!important;
-        text-align:left!important;
         width:100%!important;
         border-radius:8px!important;
+        cursor:pointer!important;
     }
-    div[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"]:hover {
+    .cs-home-btn button:hover {
         background:rgba(56,189,248,0.1)!important;
     }
-    div[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"] p {
-        font-size:1.4rem!important;
+    .cs-home-btn button p {
+        font-size:1.45rem!important;
         font-weight:700!important;
         color:#e2e8f0!important;
         line-height:1.2!important;
+        text-align:left!important;
     }
     </style>""", unsafe_allow_html=True)
+    st.markdown('<div class="cs-home-btn">', unsafe_allow_html=True)
     _home_clicked = st.button("CoachSphere", use_container_width=True, key="_home_title_btn")
+    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('<p style="color:#94a3b8;font-size:0.85rem;font-style:italic;margin-top:-12px;padding-left:8px;">AI Sales Coaching Analytics</p>', unsafe_allow_html=True)
     if _home_clicked:
         st.session_state['_nav_home'] = True
