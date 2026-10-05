@@ -766,11 +766,28 @@ with st.sidebar:
         "🤖 AI Assistant",
         "🔌 MCP Server",
     ]
-    page = st.radio("Navigation", _nav_pages)
+    _jump_nav_idx = _nav_pages.index("🔍 Rep Deep Dive") if st.session_state.get('_jump_rep') else 0
+    page = st.radio("Navigation", _nav_pages, index=_jump_nav_idx)
     st.divider()
     sel_teams = ALL_TEAMS if _mgr['team'] == 'VP Sales' else [_mgr['team']]
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
     sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
+
+    # ── Quick Rep Search ──────────────────────────────────────────────────────
+    st.divider()
+    st.markdown('<div style="font-size:0.75rem;font-weight:600;color:#64748b;letter-spacing:1px;margin-bottom:4px;">QUICK REP SEARCH</div>', unsafe_allow_html=True)
+    _team_f = "','".join(sel_teams)
+    _all_reps_sidebar = query(f"SELECT name FROM users WHERE role!='Team Lead' AND team IN ('{_team_f}') ORDER BY name")['name'].tolist()
+    _search_q = st.text_input("", placeholder="Type rep name...", key="_rep_search_input", label_visibility="collapsed")
+    if _search_q:
+        _matches = [r for r in _all_reps_sidebar if _search_q.lower() in r.lower()]
+        if _matches:
+            for _m in _matches[:5]:
+                if st.button(_m, key=f"_srep_{_m}", use_container_width=True):
+                    st.session_state['_jump_rep'] = _m
+                    st.rerun()
+        else:
+            st.caption("No reps found")
 
 
 
@@ -1214,7 +1231,10 @@ elif page == "🔍 Rep Deep Dive":
         <div class="hero-sub">Full coaching history, skill radar, and business metrics for any rep</div>
     </div>""", unsafe_allow_html=True)
     reps = query(f"SELECT user_id, name, team FROM users WHERE role!='Team Lead' AND team IN ('{team_filter}') ORDER BY name")
-    sel_rep = st.selectbox("Select Sales Rep", reps['name'].tolist())
+    _rep_list = reps['name'].tolist()
+    _jump = st.session_state.pop('_jump_rep', None)
+    _rep_default_idx = _rep_list.index(_jump) if _jump and _jump in _rep_list else 0
+    sel_rep = st.selectbox("Select Sales Rep", _rep_list, index=_rep_default_idx)
     uid = int(reps[reps['name']==sel_rep]['user_id'].iloc[0])
 
     eff = query("SELECT * FROM v_coaching_effectiveness WHERE user_id=? ORDER BY period_month", (uid,))
