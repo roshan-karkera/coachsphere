@@ -765,6 +765,7 @@ with st.sidebar:
         "📋 Metric Definitions",
         "🤖 AI Assistant",
         "🔌 MCP Server",
+        "💰 Coaching ROI",
     ]
     _jump_nav_idx = _nav_pages.index("🔍 Rep Deep Dive") if st.session_state.get('_jump_rep') else 0
     page = st.radio("Navigation", _nav_pages, index=_jump_nav_idx)
@@ -2222,5 +2223,171 @@ elif page == "🔌 MCP Server":
                 <span style="color:#94a3b8;font-size:0.83rem;line-height:1.6">Restart Claude Desktop — all <span style="color:#34d399;font-weight:600">10 tools</span> appear automatically in the chat bar</span>
             </div>
         </div>
+    </div>""", unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+elif page == "💰 Coaching ROI":
+    st.markdown(f"""<div class="page-hero">
+        <div class="hero-title">💰 Coaching ROI &amp; Cost Optimization</div>
+        <div class="hero-sub">Translate coaching investment into revenue impact — drag the sliders to model different cost scenarios</div>
+    </div>""", unsafe_allow_html=True)
+
+    # ── Assumption sliders ────────────────────────────────────────────────────
+    st.markdown('<div class="section-title">Cost model assumptions</div>', unsafe_allow_html=True)
+    st.caption("Adjust these to match your business context. All KPIs update instantly.")
+    col_s1, col_s2, col_s3 = st.columns(3)
+    with col_s1:
+        cost_per_session = st.slider("Cost per session (€)", min_value=50, max_value=500, value=150, step=10,
+                                     help="Average fully-loaded cost of one coaching session")
+    with col_s2:
+        avg_deal_value = st.slider("Avg deal value (€)", min_value=1000, max_value=50000, value=10000, step=500,
+                                   help="Average closed deal value across all teams")
+    with col_s3:
+        target_quota = st.slider("Monthly quota target (€)", min_value=5000, max_value=100000, value=30000, step=1000,
+                                 help="Expected monthly revenue per rep")
+
+    # ── Fetch data ────────────────────────────────────────────────────────────
+    roi_sessions = query(f"""
+        SELECT team, COUNT(*) AS sessions
+        FROM coaching_sessions
+        WHERE team IN ('{team_filter}')
+        GROUP BY team
+    """)
+    roi_eff = query(f"""
+        SELECT u.team, AVG(ce.coaching_effectiveness_score) AS avg_eff,
+               AVG(bi.quota_attainment) AS avg_quota
+        FROM v_coaching_effectiveness ce
+        JOIN users u ON ce.user_id = u.user_id
+        JOIN v_business_impact bi ON ce.user_id = bi.user_id AND ce.period_month = bi.period_month
+        WHERE u.role != 'Team Lead' AND u.team IN ('{team_filter}')
+        GROUP BY u.team
+        ORDER BY avg_eff DESC
+    """)
+    roi_reps = query(f"""
+        SELECT u.name, u.team,
+               ROUND(AVG(bi.quota_attainment)*100, 1) AS quota_pct,
+               COUNT(DISTINCT cs.session_id) AS sessions
+        FROM users u
+        JOIN v_business_impact bi ON u.user_id = bi.user_id
+        LEFT JOIN coaching_sessions cs ON u.user_id = cs.user_id
+        WHERE u.role != 'Team Lead' AND u.team IN ('{team_filter}')
+        GROUP BY u.user_id, u.name, u.team
+        ORDER BY quota_pct ASC
+    """)
+
+    total_sessions = int(roi_sessions['sessions'].sum()) if not roi_sessions.empty else 0
+    total_spend    = total_sessions * cost_per_session
+    avg_quota_pct  = float(roi_eff['avg_quota'].mean()) if not roi_eff.empty else 0.82
+    revenue_recovered = total_spend * (avg_quota_pct / 0.65)   # vs 65% baseline
+    roi_ratio      = revenue_recovered / total_spend if total_spend > 0 else 0
+
+    under_reps = roi_reps[roi_reps['quota_pct'] < 80] if not roi_reps.empty else roi_reps
+    revenue_at_risk = int(len(under_reps) * target_quota * ((80 - under_reps['quota_pct'].mean()) / 100)) if not under_reps.empty else 0
+
+    # ── KPI cards ─────────────────────────────────────────────────────────────
+    st.markdown('<div class="section-title" style="margin-top:1.5rem">Platform-level metrics</div>', unsafe_allow_html=True)
+    k1, k2, k3, k4 = st.columns(4)
+    with k1:
+        st.metric("Total coaching spend", f"€{total_spend:,.0f}", f"{total_sessions:,} sessions × €{cost_per_session}")
+    with k2:
+        st.metric("Revenue recovered", f"€{revenue_recovered:,.0f}", "vs. pre-coaching baseline (65%)")
+    with k3:
+        roi_delta = f"+{roi_ratio-1:.1f}× above break-even" if roi_ratio > 1 else "below break-even"
+        st.metric("Platform ROI", f"{roi_ratio:.1f}×", roi_delta)
+    with k4:
+        st.metric("Revenue at risk", f"€{revenue_at_risk:,.0f}", f"{len(under_reps)} reps below 80% quota", delta_color="inverse")
+
+    st.divider()
+
+    # ── Efficiency + allocation ───────────────────────────────────────────────
+    col_eff, col_alloc = st.columns(2)
+
+    with col_eff:
+        st.markdown('<div class="section-title">Coaching ROI by team</div>', unsafe_allow_html=True)
+        if not roi_eff.empty and not roi_sessions.empty:
+            merged = roi_eff.merge(roi_sessions, on='team')
+            merged['spend']   = merged['sessions'] * cost_per_session
+            merged['revenue'] = merged['sessions'] * cost_per_session * (merged['avg_quota'] / 0.65)
+            merged['roi']     = (merged['revenue'] / merged['spend']).round(1)
+            merged = merged.sort_values('roi', ascending=True)
+            fig_roi = px.bar(
+                merged, x='roi', y='team', orientation='h',
+                color='roi', color_continuous_scale=['#ef4444','#f59e0b','#34d399'],
+                range_color=[0.5, 5],
+                labels={'roi': 'ROI (×)', 'team': ''},
+                text=merged['roi'].apply(lambda x: f"{x:.1f}×")
+            )
+            fig_roi.update_traces(textposition='outside')
+            fig_roi.update_layout(
+                plot_bgcolor='#0f172a', paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#ffffff'), showlegend=False,
+                coloraxis_showscale=False,
+                margin=dict(l=0, r=40, t=10, b=10), height=220,
+                xaxis=dict(gridcolor='#1e293b', zeroline=False),
+                yaxis=dict(gridcolor='#1e293b')
+            )
+            st.plotly_chart(fig_roi, use_container_width=True)
+
+    with col_alloc:
+        st.markdown('<div class="section-title">Resource allocation signal</div>', unsafe_allow_html=True)
+        st.caption("High sessions + low effectiveness = budget reallocation opportunity")
+        if not roi_eff.empty and not roi_sessions.empty:
+            alloc = roi_eff.merge(roi_sessions, on='team')
+            median_sessions = alloc['sessions'].median()
+            median_eff      = alloc['avg_eff'].median()
+            for _, row in alloc.iterrows():
+                over_coached  = row['sessions'] > median_sessions and row['avg_eff'] > median_eff
+                under_coached = row['sessions'] < median_sessions and row['avg_eff'] < median_eff
+                if over_coached:
+                    tag = "🟡 Over-coached"
+                    color = "#f59e0b"
+                    note = "High spend, already performing — reduce sessions"
+                elif under_coached:
+                    tag = "🔴 Under-coached"
+                    color = "#ef4444"
+                    note = "Low investment, low performance — increase sessions"
+                else:
+                    tag = "🟢 Optimal"
+                    color = "#34d399"
+                    note = "Sessions and effectiveness in balance"
+                st.markdown(
+                    f'<div style="display:flex;justify-content:space-between;align-items:center;'
+                    f'padding:10px 14px;border-radius:8px;background:#0f172a;margin-bottom:8px;">'
+                    f'<div><span style="color:#e2e8f0;font-weight:600;font-size:0.9rem">{row["team"]}</span>'
+                    f'<div style="color:#64748b;font-size:0.75rem;margin-top:2px">{note}</div></div>'
+                    f'<span style="color:{color};font-size:0.8rem;font-weight:600">{tag}</span></div>',
+                    unsafe_allow_html=True
+                )
+
+    st.divider()
+
+    # ── Revenue gap table ─────────────────────────────────────────────────────
+    st.markdown('<div class="section-title">Revenue gap by rep — underperformance cost</div>', unsafe_allow_html=True)
+    st.caption("Quota gap translated into revenue terms using your target quota and deal value assumptions.")
+    if not roi_reps.empty:
+        gap_df = roi_reps.copy()
+        gap_df['quota_gap_pct'] = gap_df['quota_pct'] - 100
+        gap_df['revenue_gap']   = ((gap_df['quota_pct'] - 100) / 100 * target_quota).round(0).astype(int)
+        gap_df['session_cost']  = gap_df['sessions'] * cost_per_session
+        gap_df['cost_roi']      = (gap_df['revenue_gap'].abs() / gap_df['session_cost'].replace(0, 1)).round(1)
+        gap_df['cost_roi']      = gap_df.apply(
+            lambda r: f"{r['cost_roi']:.1f}×" if r['revenue_gap'] >= 0 else f"-{r['cost_roi']:.1f}×", axis=1
+        )
+        gap_df['revenue_gap_fmt'] = gap_df['revenue_gap'].apply(
+            lambda x: f"+€{x:,}" if x >= 0 else f"-€{abs(x):,}"
+        )
+        gap_df['quota_pct_fmt'] = gap_df['quota_pct'].apply(lambda x: f"{x:.1f}%")
+        display_df = gap_df[['name','team','quota_pct_fmt','revenue_gap_fmt','sessions','cost_roi']].rename(columns={
+            'name': 'Rep', 'team': 'Team', 'quota_pct_fmt': 'Quota attainment',
+            'revenue_gap_fmt': 'Revenue gap', 'sessions': 'Sessions',
+            'cost_roi': 'Session ROI'
+        })
+        dark_table(display_df)
+
+    st.markdown("""<div style="margin-top:1rem;padding:12px 16px;background:#0f172a;border-radius:8px;
+        border-left:3px solid #38bdf8;color:#94a3b8;font-size:0.8rem;line-height:1.7">
+        <b style="color:#38bdf8">Methodology:</b> Revenue gap = (quota attainment − 100%) × monthly quota target.
+        Session ROI = |revenue gap| / (sessions × cost per session).
+        Assumptions are adjustable above and do not reflect real billing data.
     </div>""", unsafe_allow_html=True)
 
