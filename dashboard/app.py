@@ -777,26 +777,23 @@ with st.sidebar:
     # ── Quick Rep Search ──────────────────────────────────────────────────────
     st.divider()
     st.markdown("""<style>
-    div[data-testid="stSidebar"] input[type="text"] {
-        color: #e2e8f0 !important;
-        background: #0f172a !important;
-        border: 1px solid #334155 !important;
-        border-radius: 8px !important;
+    div[data-testid="stSidebar"] div[data-testid="stTextInput"] input {
+        color: #111827 !important;
+        caret-color: #111827 !important;
     }
-    div[data-testid="stSidebar"] input[type="text"]::placeholder {
-        color: #64748b !important;
+    div[data-testid="stSidebar"] div[data-testid="stTextInput"] input::placeholder {
+        color: #94a3b8 !important;
     }
-    div[data-testid="stSidebar"] .search-results button {
+    div[data-testid="stSidebar"] div.srep-result div[data-testid="stButton"] button {
         background: #1e293b !important;
         border: 1px solid #334155 !important;
         color: #e2e8f0 !important;
         border-radius: 6px !important;
-        margin-top: 2px !important;
         font-size: 0.82rem !important;
-        padding: 4px 8px !important;
         text-align: left !important;
+        margin-top: -8px !important;
     }
-    div[data-testid="stSidebar"] .search-results button:hover {
+    div[data-testid="stSidebar"] div.srep-result div[data-testid="stButton"] button:hover {
         background: #334155 !important;
     }
     </style>""", unsafe_allow_html=True)
@@ -807,12 +804,12 @@ with st.sidebar:
     if _search_q:
         _matches = [r for r in _all_reps_sidebar if _search_q.lower() in r.lower()]
         if _matches:
-            st.markdown('<div class="search-results">', unsafe_allow_html=True)
             for _m in _matches[:5]:
+                st.markdown('<div class="srep-result">', unsafe_allow_html=True)
                 if st.button(_m, key=f"_srep_{_m}", use_container_width=True):
                     st.session_state['_jump_rep'] = _m
                     st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown('<div style="color:#64748b;font-size:0.78rem;padding:4px 0;">No reps found</div>', unsafe_allow_html=True)
 
