@@ -2248,10 +2248,11 @@ elif page == "💰 Coaching ROI":
 
     # ── Fetch data ────────────────────────────────────────────────────────────
     roi_sessions = query(f"""
-        SELECT team, COUNT(*) AS sessions
-        FROM coaching_sessions
-        WHERE team IN ('{team_filter}')
-        GROUP BY team
+        SELECT u.team, COUNT(*) AS sessions
+        FROM coaching_sessions cs
+        JOIN users u ON cs.user_id = u.user_id
+        WHERE u.team IN ('{team_filter}')
+        GROUP BY u.team
     """)
     roi_eff = query(f"""
         SELECT u.team, AVG(ce.coaching_effectiveness_score) AS avg_eff,
