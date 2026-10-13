@@ -763,9 +763,9 @@ with st.sidebar:
         "📅 Session Insights",
         "🔍 Rep Deep Dive",
         "📋 Metric Definitions",
+        "💰 Coaching ROI",
         "🤖 AI Assistant",
         "🔌 MCP Server",
-        "💰 Coaching ROI",
     ]
     _jump_nav_idx = _nav_pages.index("🔍 Rep Deep Dive") if st.session_state.get('_jump_rep') else 0
     page = st.radio("Navigation", _nav_pages, index=_jump_nav_idx)
@@ -2286,6 +2286,16 @@ elif page == "💰 Coaching ROI":
     revenue_at_risk = int(len(under_reps) * target_quota * ((80 - under_reps['quota_pct'].mean()) / 100)) if not under_reps.empty else 0
 
     # ── KPI cards ─────────────────────────────────────────────────────────────
+    st.markdown("""<div style="margin-bottom:1.5rem;padding:12px 16px;background:#0f172a;border-radius:8px;
+        border-left:3px solid #38bdf8;color:#94a3b8;font-size:0.8rem;line-height:1.7">
+        <b style="color:#38bdf8">How this is calculated:</b>
+        &nbsp;<b style="color:#e2e8f0">Total spend</b> = sessions × cost per session.
+        &nbsp;<b style="color:#e2e8f0">Revenue recovered</b> = spend × (avg quota attainment / 65% baseline).
+        &nbsp;<b style="color:#e2e8f0">Platform ROI</b> = revenue recovered / total spend.
+        &nbsp;<b style="color:#e2e8f0">Revenue gap</b> = (quota attainment − 100%) × monthly quota target.
+        &nbsp;<b style="color:#e2e8f0">Session ROI</b> = |revenue gap| / (sessions × cost per session).
+        All figures use your slider assumptions and do not reflect real billing data.
+    </div>""", unsafe_allow_html=True)
     st.markdown('<div class="section-title" style="margin-top:1.5rem">Platform-level metrics</div>', unsafe_allow_html=True)
     k1, k2, k3, k4 = st.columns(4)
     with k1:
@@ -2385,10 +2395,4 @@ elif page == "💰 Coaching ROI":
         })
         dark_table(display_df)
 
-    st.markdown("""<div style="margin-top:1rem;padding:12px 16px;background:#0f172a;border-radius:8px;
-        border-left:3px solid #38bdf8;color:#94a3b8;font-size:0.8rem;line-height:1.7">
-        <b style="color:#38bdf8">Methodology:</b> Revenue gap = (quota attainment − 100%) × monthly quota target.
-        Session ROI = |revenue gap| / (sessions × cost per session).
-        Assumptions are adjustable above and do not reflect real billing data.
-    </div>""", unsafe_allow_html=True)
 

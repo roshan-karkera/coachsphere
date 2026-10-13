@@ -1,7 +1,7 @@
 """
 CoachSphere Agent Tools
 LangChain-compatible tools that query the CoachSphere SQLite database.
-These are the same 10 analytics operations as the MCP server, wrapped for agent use.
+These are the same analytics operations as the MCP server, wrapped for agent use.
 """
 
 import os
@@ -341,7 +341,90 @@ def get_manager_details(team: str = "all") -> str:
     return _fmt(rows)
 
 
-# All 12 tools exported
+@tool
+def get_coaching_roi(
+    cost_per_session: float = 150.0,
+    target_quota: float = 30000.0,
+    team: str = "all",
+) -> str:
+    """
+    Calculate coaching ROI and revenue gap by team and by rep.
+    Use when asked about ROI, cost of coaching, revenue impact, underperformance cost,
+    resource allocation, which teams are over- or under-coached, or any cost/budget question.
+
+    Args:
+        cost_per_session: Cost of one coaching session in euros. Default 150.
+        target_quota: Monthly revenue target per rep in euros. Default 30000.
+        team: Team filter — Enterprise, SMB, EMEA, APAC, or 'all'.
+    """
+    tf = f"AND u.team = '{team}'" if team and team != "all" else ""
+    team_rows = _q(f"""
+        SELECT u.team,
+               COUNT(DISTINCT cs.session_id)           AS sessions,
+               ROUND(AVG(bi.quota_attainment) * 100, 1) AS avg_quota_pct,
+               ROUND(AVG(ce.coaching_effectiveness_score), 3) AS avg_effectiveness
+        FROM users u
+        JOIN coaching_sessions cs ON cs.user_id = u.user_id
+        JOIN v_business_impact bi ON bi.user_id = u.user_id
+        JOIN v_coaching_effectiveness ce ON ce.user_id = u.user_id
+            AND ce.period_month = bi.period_month
+        WHERE u.role != 'Team Lead' {tf}
+        GROUP BY u.team
+        ORDER BY avg_effectiveness DESC
+    """)
+    rep_rows = _q(f"""
+        SELECT u.name, u.team,
+               ROUND(AVG(bi.quota_attainment) * 100, 1) AS quota_pct,
+               COUNT(DISTINCT cs.session_id) AS sessions
+        FROM users u
+        JOIN v_business_impact bi ON bi.user_id = u.user_id
+        LEFT JOIN coaching_sessions cs ON cs.user_id = u.user_id
+        WHERE u.role != 'Team Lead' {tf}
+        GROUP BY u.user_id, u.name, u.team
+        ORDER BY quota_pct ASC
+        LIMIT 10
+    """)
+    result = []
+    for r in team_rows:
+        spend  = r["sessions"] * cost_per_session
+        baseline = 0.65
+        recovered = spend * (r["avg_quota_pct"] / 100 / baseline) if baseline else 0
+        roi    = round(recovered / spend, 2) if spend else 0
+        sessions_median = sum(x["sessions"] for x in team_rows) / len(team_rows) if team_rows else 1
+        eff_median      = sum(x["avg_effectiveness"] for x in team_rows) / len(team_rows) if team_rows else 0.5
+        if r["sessions"] > sessions_median and r["avg_effectiveness"] > eff_median:
+            allocation = "over-coached (high spend, already performing — consider reducing sessions)"
+        elif r["sessions"] < sessions_median and r["avg_effectiveness"] < eff_median:
+            allocation = "under-coached (low investment, low performance — increase sessions)"
+        else:
+            allocation = "optimal"
+        result.append({
+            "team": r["team"],
+            "sessions": r["sessions"],
+            "coaching_spend_eur": round(spend, 0),
+            "revenue_recovered_eur": round(recovered, 0),
+            "roi": roi,
+            "avg_quota_pct": r["avg_quota_pct"],
+            "resource_allocation": allocation,
+        })
+    rep_gaps = []
+    for r in rep_rows:
+        gap = round((r["quota_pct"] - 100) / 100 * target_quota, 0)
+        spend = r["sessions"] * cost_per_session
+        session_roi = round(abs(gap) / spend, 2) if spend else 0
+        rep_gaps.append({
+            "name": r["name"],
+            "team": r["team"],
+            "quota_pct": r["quota_pct"],
+            "revenue_gap_eur": gap,
+            "sessions": r["sessions"],
+            "session_roi": session_roi,
+        })
+    return _fmt({"team_roi": result, "rep_revenue_gaps": rep_gaps,
+                 "assumptions": {"cost_per_session_eur": cost_per_session, "target_quota_eur": target_quota}})
+
+
+# All 13 tools exported
 ALL_TOOLS = [
     get_top_performers,
     get_team_summary,
@@ -355,4 +438,5 @@ ALL_TOOLS = [
     explain_metric_definition,
     get_team_roster,
     get_manager_details,
+    get_coaching_roi,
 ]

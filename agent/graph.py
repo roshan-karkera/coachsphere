@@ -45,6 +45,7 @@ Rules:
 - If a tool returns empty results, respond with: "No data found for that period. The dataset covers January-June 2024."
 - For questions about managers, who leads a team, or team leads — use the get_manager_details tool.
 - For questions about who is on a team, team members, or rep names — use the get_team_roster tool.
+- For questions about ROI, cost of coaching, revenue impact, underperformance cost, which teams are over- or under-coached, budget efficiency, or revenue gap — use the get_coaching_roi tool. Default cost_per_session=150, target_quota=30000 unless the user specifies different values.
 """
 
 # ── Agent ───────────────────────────────────────────────────────────────────────
