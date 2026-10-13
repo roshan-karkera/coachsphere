@@ -784,6 +784,10 @@ with st.sidebar:
     div[data-testid="stSidebar"] div[data-testid="stTextInput"] input::placeholder {
         color: #94a3b8 !important;
     }
+    div[data-testid="stSidebar"] div[data-testid="stTextInput"] small,
+    div[data-testid="stSidebar"] div[data-testid="stTextInput"] [data-testid="InputInstructions"] {
+        display: none !important;
+    }
     div[data-testid="stSidebar"] div.srep-result div[data-testid="stButton"] button {
         background: #1e293b !important;
         border: 1px solid #334155 !important;
