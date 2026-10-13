@@ -777,45 +777,33 @@ with st.sidebar:
     # ── Quick Rep Search ──────────────────────────────────────────────────────
     st.divider()
     st.markdown("""<style>
-    div[data-testid="stSidebar"] div[data-testid="stTextInput"] input {
+    section[data-testid="stSidebar"] input[type="text"] {
+        -webkit-text-fill-color: #111827 !important;
         color: #111827 !important;
         caret-color: #111827 !important;
     }
-    div[data-testid="stSidebar"] div[data-testid="stTextInput"] input::placeholder {
-        color: #94a3b8 !important;
+    section[data-testid="stSidebar"] input[type="text"]::placeholder {
+        -webkit-text-fill-color: #94a3b8 !important;
     }
-    div[data-testid="stSidebar"] div[data-testid="stTextInput"] small,
-    div[data-testid="stSidebar"] div[data-testid="stTextInput"] [data-testid="InputInstructions"] {
+    section[data-testid="stSidebar"] small,
+    section[data-testid="stSidebar"] [data-testid="InputInstructions"] {
         display: none !important;
     }
-    div[data-testid="stSidebar"] div.srep-result div[data-testid="stButton"] button {
-        background: #1e293b !important;
-        border: 1px solid #334155 !important;
-        color: #e2e8f0 !important;
-        border-radius: 6px !important;
-        font-size: 0.82rem !important;
-        text-align: left !important;
-        margin-top: -8px !important;
-    }
-    div[data-testid="stSidebar"] div.srep-result div[data-testid="stButton"] button:hover {
-        background: #334155 !important;
-    }
     </style>""", unsafe_allow_html=True)
-    st.markdown('<div style="font-size:0.75rem;font-weight:600;color:#64748b;letter-spacing:1px;margin-bottom:6px;">QUICK REP SEARCH</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:0.75rem;font-weight:600;color:#64748b;letter-spacing:1px;margin-bottom:4px;">QUICK REP SEARCH</div>', unsafe_allow_html=True)
     _team_f = "','".join(sel_teams)
     _all_reps_sidebar = query(f"SELECT name FROM users WHERE role!='Team Lead' AND team IN ('{_team_f}') ORDER BY name")['name'].tolist()
-    _search_q = st.text_input("", placeholder="Type rep name...", key="_rep_search_input", label_visibility="collapsed")
-    if _search_q:
-        _matches = [r for r in _all_reps_sidebar if _search_q.lower() in r.lower()]
-        if _matches:
-            for _m in _matches[:5]:
-                st.markdown('<div class="srep-result">', unsafe_allow_html=True)
-                if st.button(_m, key=f"_srep_{_m}", use_container_width=True):
-                    st.session_state['_jump_rep'] = _m
-                    st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div style="color:#64748b;font-size:0.78rem;padding:4px 0;">No reps found</div>', unsafe_allow_html=True)
+    with st.container():
+        _search_q = st.text_input("", placeholder="Type rep name...", key="_rep_search_input", label_visibility="collapsed")
+        if _search_q:
+            _matches = [r for r in _all_reps_sidebar if _search_q.lower() in r.lower()]
+            if _matches:
+                for _m in _matches[:5]:
+                    if st.button(_m, key=f"_srep_{_m}", use_container_width=True):
+                        st.session_state['_jump_rep'] = _m
+                        st.rerun()
+            else:
+                st.caption("No reps found")
 
 
 
