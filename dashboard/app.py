@@ -684,6 +684,12 @@ if 'manager' not in st.session_state:
         '</div>'
 
         '<div style="display:flex;align-items:center;gap:16px;">'
+        '<div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;">💰</div>'
+        '<div><div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">Coaching ROI &amp; Cost Optimization</div>'
+        '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Translate coaching spend into revenue impact</div></div>'
+        '</div>'
+
+        '<div style="display:flex;align-items:center;gap:16px;">'
         f'<div style="width:52px;height:52px;border-radius:14px;flex-shrink:0;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);display:flex;align-items:center;justify-content:center;"><img src="data:image/svg+xml;base64,{svg_robot}" style="width:30px;height:30px;"></div>'
         '<div><div style="color:#e2e8f0;font-size:0.95rem;font-weight:600;">AI Coaching Assistant</div>'
         '<div style="color:#475569;font-size:0.8rem;margin-top:2px;">Ask anything about your team\'s performance</div></div>'
