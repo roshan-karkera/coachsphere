@@ -388,7 +388,8 @@ def get_coaching_roi(
         ),
         m AS (
             SELECT u.team,
-                   ROUND(AVG(bi.quota_attainment) * 100, 1)          AS avg_quota_pct,
+                   COUNT(DISTINCT u.user_id)                          AS rep_count,
+                   ROUND(AVG(bi.quota_attainment), 4)                 AS avg_quota,
                    ROUND(AVG(ce.coaching_effectiveness_score), 3)     AS avg_effectiveness
             FROM users u
             JOIN v_business_impact bi ON bi.user_id = u.user_id
@@ -399,7 +400,8 @@ def get_coaching_roi(
         )
         SELECT m.team,
                s.sessions,
-               m.avg_quota_pct,
+               m.rep_count,
+               m.avg_quota,
                m.avg_effectiveness
         FROM m JOIN s ON s.team = m.team
         ORDER BY m.avg_effectiveness DESC
@@ -418,14 +420,15 @@ def get_coaching_roi(
         LIMIT 10
     """)
 
+    BASELINE = 0.65  # assumed quota attainment without coaching
     result = []
+    sessions_median = sum(x["sessions"] for x in team_rows) / len(team_rows) if team_rows else 1
+    eff_median      = sum(x["avg_effectiveness"] for x in team_rows) / len(team_rows) if team_rows else 0.5
     for r in team_rows:
-        spend    = r["sessions"] * cost_per_session
-        baseline = 0.65
-        recovered = spend * (r["avg_quota_pct"] / 100 / baseline) if baseline else 0
-        roi      = round(recovered / spend, 2) if spend else 0
-        sessions_median = sum(x["sessions"] for x in team_rows) / len(team_rows) if team_rows else 1
-        eff_median      = sum(x["avg_effectiveness"] for x in team_rows) / len(team_rows) if team_rows else 0.5
+        spend          = r["sessions"] * cost_per_session
+        uplift         = max(0.0, r["avg_quota"] - BASELINE)
+        revenue_gained = r["rep_count"] * target_quota * uplift
+        roi            = round(revenue_gained / spend, 2) if spend else 0
         if r["sessions"] > sessions_median and r["avg_effectiveness"] > eff_median:
             allocation = "over-coached (high spend, already performing — consider reducing sessions)"
         elif r["sessions"] < sessions_median and r["avg_effectiveness"] < eff_median:
@@ -435,10 +438,11 @@ def get_coaching_roi(
         result.append({
             "team": r["team"],
             "sessions": r["sessions"],
+            "rep_count": r["rep_count"],
             "coaching_spend_eur": round(spend, 0),
-            "revenue_recovered_eur": round(recovered, 0),
+            "revenue_gained_eur": round(revenue_gained, 0),
             "roi": roi,
-            "avg_quota_pct": r["avg_quota_pct"],
+            "avg_quota_pct": round(r["avg_quota"] * 100, 1),
             "resource_allocation": allocation,
         })
 

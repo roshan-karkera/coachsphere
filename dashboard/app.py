@@ -2270,14 +2270,11 @@ elif page == "💰 Coaching ROI":
     # ── Assumption sliders ────────────────────────────────────────────────────
     st.markdown('<div class="section-title">Cost model assumptions</div>', unsafe_allow_html=True)
     st.caption("Adjust these to match your business context. All KPIs update instantly.")
-    col_s1, col_s2, col_s3 = st.columns(3)
+    col_s1, col_s2 = st.columns(2)
     with col_s1:
         cost_per_session = st.slider("Cost per session (€)", min_value=50, max_value=500, value=150, step=10,
                                      help="Average fully-loaded cost of one coaching session")
     with col_s2:
-        avg_deal_value = st.slider("Avg deal value (€)", min_value=1000, max_value=50000, value=10000, step=500,
-                                   help="Average closed deal value across all teams")
-    with col_s3:
         target_quota = st.slider("Monthly quota target (€)", min_value=5000, max_value=100000, value=30000, step=1000,
                                  help="Expected monthly revenue per rep")
 
@@ -2290,8 +2287,10 @@ elif page == "💰 Coaching ROI":
         GROUP BY u.team
     """)
     roi_eff = query(f"""
-        SELECT u.team, AVG(ce.coaching_effectiveness_score) AS avg_eff,
-               AVG(bi.quota_attainment) AS avg_quota
+        SELECT u.team,
+               COUNT(DISTINCT ce.user_id)                    AS rep_count,
+               AVG(ce.coaching_effectiveness_score)          AS avg_eff,
+               AVG(bi.quota_attainment)                      AS avg_quota
         FROM v_coaching_effectiveness ce
         JOIN users u ON ce.user_id = u.user_id
         JOIN v_business_impact bi ON ce.user_id = bi.user_id AND ce.period_month = bi.period_month
@@ -2311,11 +2310,14 @@ elif page == "💰 Coaching ROI":
         ORDER BY quota_pct ASC
     """)
 
+    BASELINE       = 0.65   # assumed quota attainment without coaching
     total_sessions = int(roi_sessions['sessions'].sum()) if not roi_sessions.empty else 0
     total_spend    = total_sessions * cost_per_session
-    avg_quota_pct  = float(roi_eff['avg_quota'].mean()) if not roi_eff.empty else 0.82
-    revenue_recovered = total_spend * (avg_quota_pct / 0.65)   # vs 65% baseline
-    roi_ratio      = revenue_recovered / total_spend if total_spend > 0 else 0
+    avg_quota      = float(roi_eff['avg_quota'].mean()) if not roi_eff.empty else 0.82
+    total_reps     = int(roi_eff['rep_count'].sum()) if not roi_eff.empty else 0
+    uplift         = max(0.0, avg_quota - BASELINE)
+    revenue_gained = total_reps * target_quota * uplift
+    roi_ratio      = revenue_gained / total_spend if total_spend > 0 else 0
 
     under_reps = roi_reps[roi_reps['quota_pct'] < 80] if not roi_reps.empty else roi_reps
     revenue_at_risk = int(len(under_reps) * target_quota * ((80 - under_reps['quota_pct'].mean()) / 100)) if not under_reps.empty else 0
@@ -2325,18 +2327,17 @@ elif page == "💰 Coaching ROI":
         border-left:3px solid #38bdf8;color:#94a3b8;font-size:0.8rem;line-height:1.7">
         <b style="color:#38bdf8">How this is calculated:</b>
         &nbsp;<b style="color:#e2e8f0">Total spend</b> = sessions × cost per session.
-        &nbsp;<b style="color:#e2e8f0">Revenue recovered</b> = spend × (avg quota attainment / 65% baseline).
-        &nbsp;<b style="color:#e2e8f0">Platform ROI</b> = revenue recovered / total spend.
+        &nbsp;<b style="color:#e2e8f0">Revenue gained</b> = reps × quota target × (avg attainment − 65% baseline).
+        &nbsp;<b style="color:#e2e8f0">Platform ROI</b> = revenue gained / total spend.
         &nbsp;<b style="color:#e2e8f0">Revenue gap</b> = (quota attainment − 100%) × monthly quota target.
-        &nbsp;<b style="color:#e2e8f0">Session ROI</b> = |revenue gap| / (sessions × cost per session).
-        All figures use your slider assumptions and do not reflect real billing data.
+        Baseline (65%) is the assumed attainment without coaching. All figures use your slider assumptions.
     </div>""", unsafe_allow_html=True)
     st.markdown('<div class="section-title" style="margin-top:1.5rem">Platform-level metrics</div>', unsafe_allow_html=True)
     k1, k2, k3, k4 = st.columns(4)
     with k1:
         st.metric("Total coaching spend", f"€{total_spend:,.0f}", f"{total_sessions:,} sessions × €{cost_per_session}")
     with k2:
-        st.metric("Revenue recovered", f"€{revenue_recovered:,.0f}", "vs. pre-coaching baseline (65%)")
+        st.metric("Revenue gained", f"€{revenue_gained:,.0f}", f"{total_reps} reps × uplift over 65% baseline")
     with k3:
         roi_delta = f"+{roi_ratio-1:.1f}× above break-even" if roi_ratio > 1 else "below break-even"
         st.metric("Platform ROI", f"{roi_ratio:.1f}×", roi_delta)
@@ -2352,9 +2353,10 @@ elif page == "💰 Coaching ROI":
         st.markdown('<div class="section-title">Coaching ROI by team</div>', unsafe_allow_html=True)
         if not roi_eff.empty and not roi_sessions.empty:
             merged = roi_eff.merge(roi_sessions, on='team')
-            merged['spend']   = merged['sessions'] * cost_per_session
-            merged['revenue'] = merged['sessions'] * cost_per_session * (merged['avg_quota'] / 0.65)
-            merged['roi']     = (merged['revenue'] / merged['spend']).round(1)
+            merged['spend']          = merged['sessions'] * cost_per_session
+            merged['uplift']         = (merged['avg_quota'] - BASELINE).clip(lower=0)
+            merged['revenue_gained'] = merged['rep_count'] * target_quota * merged['uplift']
+            merged['roi']            = (merged['revenue_gained'] / merged['spend'].replace(0, 1)).round(2)
             merged = merged.sort_values('roi', ascending=True)
             fig_roi = px.bar(
                 merged, x='roi', y='team', orientation='h',
@@ -2409,7 +2411,7 @@ elif page == "💰 Coaching ROI":
 
     # ── Revenue gap table ─────────────────────────────────────────────────────
     st.markdown('<div class="section-title">Revenue gap by rep — underperformance cost</div>', unsafe_allow_html=True)
-    st.caption("Quota gap translated into revenue terms using your target quota and deal value assumptions.")
+    st.caption("Quota gap translated into revenue terms using your target quota assumption.")
     if not roi_reps.empty:
         gap_df = roi_reps.copy()
         gap_df['quota_gap_pct'] = gap_df['quota_pct'] - 100

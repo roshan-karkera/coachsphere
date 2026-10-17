@@ -424,13 +424,9 @@ def get_coaching_roi(
         ),
         m AS (
             SELECT u.team,
-                   ROUND(AVG(bi.quota_attainment) * 100, 1)      AS avg_quota_pct,
-                   ROUND(SUM(
-                       CASE WHEN bi.quota_attainment < 1.0
-                            THEN (1.0 - bi.quota_attainment) * {float(target_quota)}
-                            ELSE 0 END
-                   ), 0)                                          AS revenue_gap_eur,
-                   ROUND(AVG(ce.coaching_effectiveness_score), 3) AS avg_effectiveness
+                   COUNT(DISTINCT u.user_id)                          AS rep_count,
+                   ROUND(AVG(bi.quota_attainment), 4)                 AS avg_quota,
+                   ROUND(AVG(ce.coaching_effectiveness_score), 3)     AS avg_effectiveness
             FROM users u
             JOIN v_business_impact bi ON bi.user_id = u.user_id
             JOIN v_coaching_effectiveness ce
@@ -440,17 +436,21 @@ def get_coaching_roi(
         )
         SELECT m.team,
                s.sessions,
-               m.avg_quota_pct,
-               m.revenue_gap_eur,
+               m.rep_count,
+               m.avg_quota,
                m.avg_effectiveness
         FROM m JOIN s ON s.team = m.team
-        ORDER BY m.revenue_gap_eur DESC
+        ORDER BY m.avg_effectiveness DESC
     """)
+    BASELINE = 0.65
     for r in rows:
-        spend = r["sessions"] * cost_per_session
-        r["coaching_spend_eur"] = round(spend, 0)
-        gap = r.get("revenue_gap_eur") or 0
-        r["roi_ratio"] = round(gap / spend, 2) if spend > 0 else None
+        spend          = r["sessions"] * cost_per_session
+        uplift         = max(0.0, r["avg_quota"] - BASELINE)
+        revenue_gained = r["rep_count"] * target_quota * uplift
+        r["coaching_spend_eur"]  = round(spend, 0)
+        r["revenue_gained_eur"]  = round(revenue_gained, 0)
+        r["avg_quota_pct"]       = round(r["avg_quota"] * 100, 1)
+        r["roi_ratio"]           = round(revenue_gained / spend, 2) if spend > 0 else None
     return rows
 
 
