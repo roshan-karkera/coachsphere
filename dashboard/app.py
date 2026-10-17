@@ -2060,12 +2060,13 @@ elif page == "🔌 MCP Server":
         {"name": "explain_metric_definition",        "emoji": "📋", "desc": "KPI formula, description, and version",      "params": ["metric_name"]},
         {"name": "get_team_roster",                  "emoji": "👤", "desc": "All reps in a team with role and region",    "params": ["team"]},
         {"name": "get_manager_details",              "emoji": "🧑‍💼", "desc": "Manager names with latest team KPIs",       "params": ["team"]},
+        {"name": "get_coaching_roi",                 "emoji": "💰", "desc": "Coaching ROI, revenue gap and cost optimisation by team", "params": ["team"]},
     ]
 
     if "mcp_selected" not in st.session_state:
         st.session_state.mcp_selected = "get_top_performers"
 
-    st.markdown('<div class="section-title">12 Exposed Tools — Click to Run</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">13 Exposed Tools — Click to Run</div>', unsafe_allow_html=True)
     col_l, col_r = st.columns(2)
     for i, tool in enumerate(TOOLS_META):
         is_sel = (st.session_state.mcp_selected == tool["name"])
@@ -2216,6 +2217,19 @@ elif page == "🔌 MCP Server":
             FROM v_team_summary ts JOIN users u ON u.team=ts.team AND u.role='Team Lead'
             WHERE ts.period_month=(SELECT MAX(period_month) FROM v_team_summary) {tf.replace('team','ts.team')}
             ORDER BY ts.avg_effectiveness DESC""")
+    elif sel == "get_coaching_roi":
+        tf_roi = f"AND u.team = '{team}'" if team and team != "all" else ""
+        result_df = query(f"""SELECT u.team,
+            COUNT(cs.session_id) AS total_sessions,
+            ROUND(COUNT(cs.session_id) * 150.0, 0) AS coaching_spend_usd,
+            COUNT(DISTINCT cs.user_id) AS reps_coached,
+            ROUND(AVG(bi.quota_attainment)*100,1) AS avg_quota_pct,
+            ROUND(SUM(CASE WHEN bi.quota_attainment < 1.0 THEN (1.0 - bi.quota_attainment) * 30000 ELSE 0 END),0) AS revenue_gap_usd
+            FROM coaching_sessions cs
+            JOIN users u ON cs.user_id = u.user_id
+            LEFT JOIN v_business_impact bi ON cs.user_id = bi.user_id
+            WHERE u.role != 'Team Lead' {tf_roi}
+            GROUP BY u.team ORDER BY revenue_gap_usd DESC""")
 
     if result_df is not None and not result_df.empty:
         col_cfg = {}

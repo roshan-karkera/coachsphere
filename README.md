@@ -47,12 +47,13 @@ Metrics Layer (SQL Views — version controlled)
         ├──────────────────┬──────────────────────┐
         ▼                  ▼                      ▼
 Streamlit Dashboard  MCP Server (FastMCP)   LangGraph Agent
-  ├── Overview KPIs    12 tools via MCP      ReAct loop
+  ├── Overview KPIs    13 tools via MCP      ReAct loop
   ├── Team Analytics   SSE on Render         Groq gpt-oss-120b
-  ├── Skill Progress   Claude Desktop        12 LangChain tools
+  ├── Skill Progress   Claude Desktop        13 LangChain tools
   ├── Rep Deep Dive    Any MCP client        Role-based access
   ├── Metric Defs      coachsphere-mcp       Python API + CLI
-  └── AI Assistant     .onrender.com
+  ├── Coaching ROI     .onrender.com
+  └── AI Assistant
 ```
 
 ---
@@ -67,9 +68,9 @@ Streamlit Dashboard  MCP Server (FastMCP)   LangGraph Agent
 | Analytics | Pandas, NumPy |
 | Visualisation | Plotly, Streamlit |
 | AI Assistant | LangGraph · `create_react_agent` · Groq `gpt-oss-120b` · role-based access |
-| MCP Server | FastMCP (`mcp[cli]`) · SSE transport · deployed on Render · 12 tools |
+| MCP Server | FastMCP (`mcp[cli]`) · SSE transport · deployed on Render · 13 tools |
 | MCP Client | Claude Desktop · any MCP-compatible client · MCP Inspector |
-| Agent | LangGraph · `create_react_agent` · langchain-groq · 12 LangChain tools |
+| Agent | LangGraph · `create_react_agent` · langchain-groq · 13 LangChain tools |
 
 ---
 
@@ -129,7 +130,7 @@ streamlit run dashboard/app.py
 
 ## MCP Server — Connect to Claude Desktop
 
-CoachSphere exposes all 12 analytics tools via the [Model Context Protocol](https://modelcontextprotocol.io), so any MCP client (Claude Desktop, etc.) can query your coaching data in natural language.
+CoachSphere exposes all 13 analytics tools via the [Model Context Protocol](https://modelcontextprotocol.io), so any MCP client (Claude Desktop, etc.) can query your coaching data in natural language.
 
 ```bash
 # Install MCP library
@@ -149,14 +150,14 @@ Add the following to Claude Desktop → Settings → Developer → Edit Config:
 }
 ```
 
-Restart Claude Desktop — all 12 tools appear automatically. Try:
+Restart Claude Desktop — all 13 tools appear automatically. Try:
 > *"Who are the top 5 reps by coaching effectiveness in June 2024?"*
 
 See `mcp/SETUP.md` for full instructions and troubleshooting.
 
 ---
 
-## 12 MCP Tools
+## 13 MCP Tools
 
 | Tool | What it does |
 |---|---|
@@ -172,12 +173,13 @@ See `mcp/SETUP.md` for full instructions and troubleshooting.
 | `explain_metric_definition` | How any KPI is defined, its formula, unit, and version |
 | `get_team_roster` | All sales reps in a team with role, region, and hire date |
 | `get_manager_details` | Team manager names with their team's latest KPI summary |
+| `get_coaching_roi` | Coaching spend, revenue gap, and ROI by team — data-driven cost optimisation |
 
 ---
 
 ## AI Assistant
 
-The **🤖 AI Assistant** page lets you query coaching data in plain English. It uses a **LangGraph ReAct agent** powered by Groq (`gpt-oss-120b`) with 12 tools:
+The **🤖 AI Assistant** page lets you query coaching data in plain English. It uses a **LangGraph ReAct agent** powered by Groq (`gpt-oss-120b`) with 13 tools:
 
 - Automatically selects the right tool and parameters from your question
 - Chains multiple tool calls for complex, multi-part questions
