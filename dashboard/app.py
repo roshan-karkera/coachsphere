@@ -1868,6 +1868,7 @@ elif page == "🤖 AI Assistant":
             "Show me reps whose objection handling improved the most over 6 months.",
             "How many sessions were missed in each month?",
             "Which rep closed the most deals in May 2024?",
+            "What is the coaching ROI for the SMB team at €200 per session?",
         ]
         cols = st.columns(2)
         for i, ex in enumerate(examples):
