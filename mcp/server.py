@@ -286,8 +286,9 @@ def compare_skill_progression(teams: str = "all", skill: str = "overall") -> lis
     col = skill if skill in valid_skills else "avg_overall_score"
     # Whitelist each team name individually before interpolating
     requested = [t.strip() for t in (teams or "").split(",")]
-    safe = [t for t in requested if t in _VALID_TEAMS]
-    team_filter = f"AND team IN ('{\"', '\".join(safe)}')" if safe else ""
+    safe = [t for t in requested if t in _valid_teams()]
+    team_list = "', '".join(safe)
+    team_filter = f"AND team IN ('{team_list}')" if safe else ""
     return _q(f"""
         SELECT period_month, team, ROUND(AVG({col}), 2) AS avg_score
         FROM v_skill_progression
