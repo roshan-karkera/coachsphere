@@ -368,9 +368,14 @@ def get_coaching_roi(
     Use when asked about ROI, cost of coaching, revenue impact, underperformance cost,
     resource allocation, which teams are over- or under-coached, or any cost/budget question.
 
+    IMPORTANT: if the user mentioned a specific cost_per_session or target_quota earlier in the
+    conversation (e.g. "at 200 per session"), carry that value forward into this call even if
+    they do not repeat it in their follow-up message. Only fall back to the defaults (150, 30000)
+    when no cost has been mentioned anywhere in the conversation.
+
     Args:
-        cost_per_session: Cost of one coaching session in euros. Default 150.
-        target_quota: Monthly revenue target per rep in euros. Default 30000.
+        cost_per_session: Cost of one coaching session in euros. Default 150. Carry forward from context if stated earlier.
+        target_quota: Monthly revenue target per rep in euros. Default 30000. Carry forward from context if stated earlier.
         team: Team filter — Enterprise, SMB, EMEA, APAC, or 'all'.
     """
     # Fix: aggregate sessions and metrics at the same grain (team) in separate CTEs,
