@@ -5,6 +5,7 @@ These are the same analytics operations as the MCP server, wrapped for agent use
 """
 
 import os
+import re
 import sqlite3
 import json
 from pathlib import Path
@@ -12,19 +13,42 @@ from langchain_core.tools import tool
 
 DB = Path(os.environ.get("TEMP", "/tmp")) / "coachsphere.db"
 
+# ── Input validation ───────────────────────────────────────────────────────────
+# Whitelist team and month before interpolating into SQL.
+# Any value not in the known set is silently dropped (returns no filter),
+# which is safe: an unrecognised team returns zero rows rather than crashing
+# or executing injected SQL.
 
-def _q(sql: str) -> list[dict]:
-    """Run a SQL query and return rows as a list of dicts."""
+def _valid_teams() -> set:
+    """Load the current team list from the database — no hardcoding."""
+    try:
+        return {r["team"] for r in _q("SELECT DISTINCT team FROM users WHERE team IS NOT NULL")}
+    except Exception:
+        return {"Enterprise", "SMB", "EMEA", "APAC"}  # fallback if DB not yet initialised
+
+
+def _tf(team: str, col: str = "team") -> str:
+    """Safe team filter — validates against the live team list from the database."""
+    return f"AND {col} = '{team}'" if team in _valid_teams() else ""
+
+
+def _mf(month: str, col: str = "period_month") -> str:
+    """Safe month filter — accepts only YYYY-MM format."""
+    return f"AND {col} = '{month}'" if re.match(r"^\d{4}-\d{2}$", month or "") else ""
+
+
+def _q(sql: str, params: tuple = ()) -> list[dict]:
+    """Run a parameterised SQL query and return rows as a list of dicts."""
     conn = sqlite3.connect(str(DB))
     conn.row_factory = sqlite3.Row
     try:
-        rows = conn.execute(sql).fetchall()
+        rows = conn.execute(sql, params).fetchall()
         return [dict(r) for r in rows]
     finally:
         conn.close()
 
 
-def _fmt(rows: list[dict]) -> str:
+def _fmt(rows) -> str:
     """Format query results as readable JSON string for the LLM."""
     return json.dumps(rows, indent=2, default=str)
 
@@ -39,15 +63,13 @@ def get_top_performers(month: str, team: str = "all") -> str:
         month: Period month in YYYY-MM format e.g. '2024-06'. Use '2024-06' as the latest.
         team: Team filter — Enterprise, SMB, EMEA, APAC, or 'all'.
     """
-    mf = f"AND period_month = '{month}'" if month and month != "all" else ""
-    tf = f"AND team = '{team}'"          if team  and team  != "all" else ""
     rows = _q(f"""
         SELECT name, team, period_month,
                ROUND(coaching_effectiveness_score, 3) AS effectiveness,
                ROUND(engagement_score, 3)             AS engagement,
                ROUND(skill_score, 3)                  AS skill_score
         FROM v_coaching_effectiveness
-        WHERE 1=1 {mf} {tf}
+        WHERE 1=1 {_mf(month)} {_tf(team)}
         ORDER BY coaching_effectiveness_score DESC
         LIMIT 5
     """)
@@ -63,13 +85,12 @@ def get_team_summary(month: str = "all") -> str:
     Args:
         month: Period month YYYY-MM, or 'all' to return every month.
     """
-    mf = f"AND period_month = '{month}'" if month and month != "all" else ""
     rows = _q(f"""
         SELECT team, period_month, active_reps,
                ROUND(avg_engagement, 3)    AS avg_engagement,
                ROUND(avg_effectiveness, 3) AS avg_effectiveness
         FROM v_team_summary
-        WHERE 1=1 {mf}
+        WHERE 1=1 {_mf(month)}
         ORDER BY period_month, avg_effectiveness DESC
     """)
     return _fmt(rows)
@@ -85,15 +106,13 @@ def get_quota_attainment(month: str = "all", team: str = "all") -> str:
         month: Period month YYYY-MM, or 'all'.
         team: Team name or 'all'.
     """
-    mf = f"AND period_month = '{month}'" if month and month != "all" else ""
-    tf = f"AND team = '{team}'"          if team  and team  != "all" else ""
     rows = _q(f"""
         SELECT team, period_month,
                ROUND(AVG(quota_attainment) * 100, 1) AS avg_quota_pct,
                ROUND(AVG(win_rate) * 100, 1)         AS avg_win_rate_pct,
                SUM(deals_closed)                     AS total_deals
         FROM v_business_impact
-        WHERE 1=1 {mf} {tf}
+        WHERE 1=1 {_mf(month)} {_tf(team)}
         GROUP BY team, period_month
         ORDER BY period_month, avg_quota_pct DESC
     """)
@@ -110,8 +129,6 @@ def get_session_stats(month: str = "all", team: str = "all") -> str:
         month: Period month YYYY-MM, or 'all'.
         team: Team name or 'all'.
     """
-    mf = f"AND period_month = '{month}'" if month and month != "all" else ""
-    tf = f"AND team = '{team}'"          if team  and team  != "all" else ""
     rows = _q(f"""
         SELECT team, period_month,
                SUM(sessions_scheduled) AS scheduled,
@@ -120,7 +137,7 @@ def get_session_stats(month: str = "all", team: str = "all") -> str:
                    CAST(SUM(sessions_completed) AS REAL) / SUM(sessions_scheduled) * 100, 1
                ) AS completion_pct
         FROM v_session_engagement
-        WHERE 1=1 {mf} {tf}
+        WHERE 1=1 {_mf(month)} {_tf(team)}
         GROUP BY team, period_month
         ORDER BY period_month
     """)
@@ -162,7 +179,7 @@ def get_rep_profile(rep_name: str) -> str:
     Args:
         rep_name: Full or partial name of the sales rep.
     """
-    rows = _q(f"""
+    rows = _q("""
         SELECT ce.name, ce.team, ce.period_month,
                ROUND(ce.coaching_effectiveness_score, 3) AS effectiveness,
                ROUND(ce.engagement_score, 3)             AS engagement,
@@ -173,9 +190,9 @@ def get_rep_profile(rep_name: str) -> str:
         FROM v_coaching_effectiveness ce
         LEFT JOIN v_business_impact bi
             ON ce.user_id = bi.user_id AND ce.period_month = bi.period_month
-        WHERE ce.name LIKE '%{rep_name}%'
+        WHERE ce.name LIKE '%' || ? || '%'
         ORDER BY ce.period_month
-    """)
+    """, (rep_name,))
     return _fmt(rows)
 
 
@@ -200,8 +217,6 @@ def get_top_by_metric(metric: str, month: str = "all", team: str = "all", limit:
         "skill_score":   "ROUND(ce.skill_score, 3)",
     }
     col  = metric_map.get(metric, "bi.deals_closed")
-    mf   = f"AND ce.period_month = '{month}'" if month and month != "all" else ""
-    tf   = f"AND ce.team = '{team}'"          if team  and team  != "all" else ""
     rows = _q(f"""
         SELECT ce.name, ce.team, ce.period_month,
                {col}                                     AS {metric},
@@ -212,9 +227,9 @@ def get_top_by_metric(metric: str, month: str = "all", team: str = "all", limit:
         FROM v_coaching_effectiveness ce
         LEFT JOIN v_business_impact bi
             ON ce.user_id = bi.user_id AND ce.period_month = bi.period_month
-        WHERE {col} IS NOT NULL {mf} {tf}
+        WHERE {col} IS NOT NULL {_mf(month, "ce.period_month")} {_tf(team, "ce.team")}
         ORDER BY {col} DESC
-        LIMIT {limit}
+        LIMIT {max(1, min(int(limit), 50))}
     """)
     return _fmt(rows)
 
@@ -230,13 +245,17 @@ def compare_skill_progression(teams: str = "all", skill: str = "overall") -> str
         skill: One of: communication, product_knowledge, objection_handling,
                closing_technique, active_listening, or 'overall'.
     """
-    valid = {"communication", "product_knowledge", "objection_handling",
-             "closing_technique", "active_listening"}
-    col = skill if skill in valid else "avg_overall_score"
-    team_filter = ""
-    if teams and teams != "all":
-        team_list = "', '".join([t.strip() for t in teams.split(",")])
+    valid_skills = {"communication", "product_knowledge", "objection_handling",
+                    "closing_technique", "active_listening"}
+    col = skill if skill in valid_skills else "avg_overall_score"
+    # Whitelist each team name individually
+    requested = [t.strip() for t in (teams or "").split(",")]
+    safe = [t for t in requested if t in _VALID_TEAMS]
+    if safe:
+        team_list = "', '".join(safe)
         team_filter = f"AND team IN ('{team_list}')"
+    else:
+        team_filter = ""
     rows = _q(f"""
         SELECT period_month, team, ROUND(AVG({col}), 2) AS avg_score
         FROM v_skill_progression
@@ -256,11 +275,10 @@ def identify_underperforming_segments(month: str = "all") -> str:
     Args:
         month: Period month YYYY-MM, or 'all'.
     """
-    mf = f"AND period_month = '{month}'" if month and month != "all" else ""
     rows = _q(f"""
         WITH platform AS (
             SELECT ROUND(AVG(coaching_effectiveness_score), 3) AS platform_avg
-            FROM v_coaching_effectiveness WHERE 1=1 {mf}
+            FROM v_coaching_effectiveness WHERE 1=1 {_mf(month)}
         )
         SELECT team, period_month,
                ROUND(AVG(coaching_effectiveness_score), 3) AS avg_effectiveness,
@@ -269,7 +287,7 @@ def identify_underperforming_segments(month: str = "all") -> str:
                ROUND(AVG(coaching_effectiveness_score) - (SELECT platform_avg FROM platform), 3)
                    AS vs_platform_avg
         FROM v_coaching_effectiveness
-        WHERE 1=1 {mf}
+        WHERE 1=1 {_mf(month)}
         GROUP BY team, period_month
         ORDER BY avg_effectiveness ASC
     """)
@@ -285,13 +303,13 @@ def explain_metric_definition(metric_name: str) -> str:
     Args:
         metric_name: Metric name or keyword e.g. 'engagement', 'effectiveness'.
     """
-    rows = _q(f"""
+    rows = _q("""
         SELECT metric_name, display_name, description, formula, unit, version
         FROM metric_definitions
-        WHERE metric_name  LIKE '%{metric_name}%'
-           OR display_name LIKE '%{metric_name}%'
+        WHERE metric_name  LIKE '%' || ? || '%'
+           OR display_name LIKE '%' || ? || '%'
         LIMIT 3
-    """)
+    """, (metric_name, metric_name))
     return _fmt(rows)
 
 
@@ -304,11 +322,10 @@ def get_team_roster(team: str = "all") -> str:
     Args:
         team: Team name — Enterprise, SMB, EMEA, APAC, or 'all' for everyone.
     """
-    tf = f"AND team = '{team}'" if team and team != "all" else ""
     rows = _q(f"""
         SELECT name, team, role, region, hire_date
         FROM users
-        WHERE role != 'Team Lead' {tf}
+        WHERE role != 'Team Lead' {_tf(team)}
         ORDER BY team, name
     """)
     return _fmt(rows)
@@ -323,7 +340,6 @@ def get_manager_details(team: str = "all") -> str:
     Args:
         team: Team name — Enterprise, SMB, EMEA, APAC, or 'all' for all managers.
     """
-    tf = f"AND ts.team = '{team}'" if team and team != "all" else ""
     rows = _q(f"""
         SELECT
             u.name        AS manager_name,
@@ -335,7 +351,7 @@ def get_manager_details(team: str = "all") -> str:
         FROM v_team_summary ts
         JOIN users u ON u.team = ts.team AND u.role = 'Team Lead'
         WHERE ts.period_month = (SELECT MAX(period_month) FROM v_team_summary)
-        {tf}
+        {_tf(team, "ts.team")}
         ORDER BY ts.avg_effectiveness DESC
     """)
     return _fmt(rows)
@@ -357,39 +373,57 @@ def get_coaching_roi(
         target_quota: Monthly revenue target per rep in euros. Default 30000.
         team: Team filter — Enterprise, SMB, EMEA, APAC, or 'all'.
     """
-    tf = f"AND u.team = '{team}'" if team and team != "all" else ""
+    # Fix: aggregate sessions and metrics at the same grain (team) in separate CTEs,
+    # then join one-row-per-team to one-row-per-team.
+    # Mixing coaching_sessions (per-event) with monthly views in a single GROUP BY
+    # fans out rows by session count and corrupts averages.
     team_rows = _q(f"""
-        SELECT u.team,
-               COUNT(DISTINCT cs.session_id)           AS sessions,
-               ROUND(AVG(bi.quota_attainment) * 100, 1) AS avg_quota_pct,
-               ROUND(AVG(ce.coaching_effectiveness_score), 3) AS avg_effectiveness
-        FROM users u
-        JOIN coaching_sessions cs ON cs.user_id = u.user_id
-        JOIN v_business_impact bi ON bi.user_id = u.user_id
-        JOIN v_coaching_effectiveness ce ON ce.user_id = u.user_id
-            AND ce.period_month = bi.period_month
-        WHERE u.role != 'Team Lead' {tf}
-        GROUP BY u.team
-        ORDER BY avg_effectiveness DESC
+        WITH s AS (
+            SELECT u.team,
+                   COUNT(cs.session_id) AS sessions
+            FROM coaching_sessions cs
+            JOIN users u ON u.user_id = cs.user_id
+            WHERE u.role != 'Team Lead' {_tf(team, "u.team")}
+            GROUP BY u.team
+        ),
+        m AS (
+            SELECT u.team,
+                   ROUND(AVG(bi.quota_attainment) * 100, 1)          AS avg_quota_pct,
+                   ROUND(AVG(ce.coaching_effectiveness_score), 3)     AS avg_effectiveness
+            FROM users u
+            JOIN v_business_impact bi ON bi.user_id = u.user_id
+            JOIN v_coaching_effectiveness ce
+                 ON ce.user_id = u.user_id AND ce.period_month = bi.period_month
+            WHERE u.role != 'Team Lead' {_tf(team, "u.team")}
+            GROUP BY u.team
+        )
+        SELECT m.team,
+               s.sessions,
+               m.avg_quota_pct,
+               m.avg_effectiveness
+        FROM m JOIN s ON s.team = m.team
+        ORDER BY m.avg_effectiveness DESC
     """)
+
     rep_rows = _q(f"""
         SELECT u.name, u.team,
                ROUND(AVG(bi.quota_attainment) * 100, 1) AS quota_pct,
-               COUNT(DISTINCT cs.session_id) AS sessions
+               COUNT(DISTINCT cs.session_id)             AS sessions
         FROM users u
         JOIN v_business_impact bi ON bi.user_id = u.user_id
         LEFT JOIN coaching_sessions cs ON cs.user_id = u.user_id
-        WHERE u.role != 'Team Lead' {tf}
+        WHERE u.role != 'Team Lead' {_tf(team, "u.team")}
         GROUP BY u.user_id, u.name, u.team
         ORDER BY quota_pct ASC
         LIMIT 10
     """)
+
     result = []
     for r in team_rows:
-        spend  = r["sessions"] * cost_per_session
+        spend    = r["sessions"] * cost_per_session
         baseline = 0.65
         recovered = spend * (r["avg_quota_pct"] / 100 / baseline) if baseline else 0
-        roi    = round(recovered / spend, 2) if spend else 0
+        roi      = round(recovered / spend, 2) if spend else 0
         sessions_median = sum(x["sessions"] for x in team_rows) / len(team_rows) if team_rows else 1
         eff_median      = sum(x["avg_effectiveness"] for x in team_rows) / len(team_rows) if team_rows else 0.5
         if r["sessions"] > sessions_median and r["avg_effectiveness"] > eff_median:
@@ -407,9 +441,10 @@ def get_coaching_roi(
             "avg_quota_pct": r["avg_quota_pct"],
             "resource_allocation": allocation,
         })
+
     rep_gaps = []
     for r in rep_rows:
-        gap = round((r["quota_pct"] - 100) / 100 * target_quota, 0)
+        gap   = round((r["quota_pct"] - 100) / 100 * target_quota, 0)
         spend = r["sessions"] * cost_per_session
         session_roi = round(abs(gap) / spend, 2) if spend else 0
         rep_gaps.append({
@@ -420,8 +455,15 @@ def get_coaching_roi(
             "sessions": r["sessions"],
             "session_roi": session_roi,
         })
-    return _fmt({"team_roi": result, "rep_revenue_gaps": rep_gaps,
-                 "assumptions": {"cost_per_session_eur": cost_per_session, "target_quota_eur": target_quota}})
+
+    return _fmt({
+        "team_roi": result,
+        "rep_revenue_gaps": rep_gaps,
+        "assumptions": {
+            "cost_per_session_eur": cost_per_session,
+            "target_quota_eur": target_quota,
+        },
+    })
 
 
 # All 13 tools exported
