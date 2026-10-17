@@ -59,6 +59,33 @@ if not _db_ready():
     subprocess.run([sys.executable, os.path.join(ROOT, 'data', 'generate_data.py')], check=True)
     subprocess.run([sys.executable, os.path.join(ROOT, 'metrics', 'apply_metrics.py')], check=True)
 
+def _run_migrations():
+    """INSERT OR IGNORE any metric definitions added after the initial DB seed."""
+    import datetime
+    _new_defs = [
+        (
+            'coaching_roi',
+            'Coaching ROI',
+            'Revenue gained from coaching relative to total coaching spend. '
+            'Uplift is measured against a 65% baseline quota attainment — the assumed attainment '
+            'without any coaching programme. A ratio above 1.0 means the programme returned more revenue than it cost.',
+            'revenue_gained / coaching_spend  where  '
+            'revenue_gained = rep_count × target_quota × max(0, avg_quota_attainment − 0.65)',
+            'ratio (e.g. 0.12 = 12%)',
+            'v1.0',
+            datetime.datetime.now().isoformat(),
+        ),
+    ]
+    try:
+        conn = sqlite3.connect(DB)
+        conn.executemany("INSERT OR IGNORE INTO metric_definitions VALUES (?,?,?,?,?,?,?)", _new_defs)
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass  # DB not ready yet — generate_data.py will seed it
+
+_run_migrations()
+
 st.set_page_config(
     page_title="CoachSphere Analytics",
     page_icon="🎯",
