@@ -1,6 +1,6 @@
 """
 CoachSphere MCP Server
-Exposes CoachSphere's 12 analytics tools to any MCP client (e.g. Claude Desktop).
+Exposes CoachSphere's 13 analytics tools to any MCP client (e.g. Claude Desktop).
 For testing MCP server on Web UI run: npx @modelcontextprotocol/inspector
 """
 
@@ -380,6 +380,49 @@ def get_manager_details(team: str = "all") -> list[dict]:
         {tf}
         ORDER BY ts.avg_effectiveness DESC
     """)
+
+
+# ── Tool 13: Coaching ROI ─────────────────────────────────────────────────────
+@mcp.tool()
+def get_coaching_roi(
+    team: str = "all",
+    cost_per_session: float = 150.0,
+    target_quota: float = 30000.0,
+) -> list[dict]:
+    """
+    Calculate coaching ROI, revenue gap, and cost optimisation signals by team.
+    Use when asked about ROI, cost of coaching, revenue impact, underperformance cost,
+    which teams are over- or under-coached, budget efficiency, or revenue gap.
+
+    Args:
+        team: Team filter — Enterprise, SMB, EMEA, APAC, or 'all'.
+        cost_per_session: Assumed cost per coaching session in USD (default 150).
+        target_quota: Monthly revenue target per rep in USD (default 30000).
+    """
+    tf = f"AND u.team = '{team}'" if team and team != "all" else ""
+    rows = _q(f"""
+        SELECT u.team,
+               COUNT(cs.session_id)                          AS total_sessions,
+               COUNT(DISTINCT cs.user_id)                    AS reps_coached,
+               ROUND(AVG(bi.quota_attainment) * 100, 1)      AS avg_quota_pct,
+               ROUND(SUM(
+                   CASE WHEN bi.quota_attainment < 1.0
+                        THEN (1.0 - bi.quota_attainment) * {target_quota}
+                        ELSE 0 END
+               ), 0)                                         AS revenue_gap_usd
+        FROM coaching_sessions cs
+        JOIN users u ON cs.user_id = u.user_id
+        LEFT JOIN v_business_impact bi ON cs.user_id = bi.user_id
+        WHERE u.role != 'Team Lead' {tf}
+        GROUP BY u.team
+        ORDER BY revenue_gap_usd DESC
+    """)
+    for r in rows:
+        r["coaching_spend_usd"] = round(r["total_sessions"] * cost_per_session, 0)
+        gap = r.get("revenue_gap_usd") or 0
+        spend = r["coaching_spend_usd"]
+        r["roi_ratio"] = round(gap / spend, 2) if spend > 0 else None
+    return rows
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────
