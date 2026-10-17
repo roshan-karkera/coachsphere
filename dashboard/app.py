@@ -317,6 +317,14 @@ section[data-testid="stSidebar"] .stButton:last-child {
 [data-testid="stSelectbox"] div[class*="ValueContainer"] *,
 [data-testid="stSelectbox"] div[class*="singleValue"] {
     color: #e2e8f0 !important;
+    -webkit-text-fill-color: #e2e8f0 !important;
+}
+/* Sidebar selectbox — force selected-value text visible */
+section[data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div > div,
+section[data-testid="stSidebar"] [data-testid="stSelectbox"] span,
+section[data-testid="stSidebar"] [data-testid="stSelectbox"] p {
+    color: #e2e8f0 !important;
+    -webkit-text-fill-color: #e2e8f0 !important;
 }
 /* Dropdown open — portal-level selectors */
 div[data-baseweb="popover"],

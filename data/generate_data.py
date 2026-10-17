@@ -242,6 +242,11 @@ def seed_metric_definitions(conn):
          'Overall coaching ROI metric combining skill progression, engagement, and business impact per user.',
          '(skill_progression * 0.4) + (engagement_score * 0.35) + (business_impact * 0.25)',
          'score (0–5)', 'v2.0', datetime.now().isoformat()),
+        ('coaching_roi',
+         'Coaching ROI',
+         'Revenue gained from coaching relative to total coaching spend. Uplift is measured against a 65% baseline quota attainment — the assumed attainment without any coaching programme. A ratio above 1.0 means the coaching programme returned more revenue than it cost.',
+         'revenue_gained / coaching_spend  where  revenue_gained = rep_count * target_quota * max(0, avg_quota_attainment - 0.65)',
+         'ratio (e.g. 0.12 = 12%)', 'v1.0', datetime.now().isoformat()),
     ]
     conn.executemany("INSERT OR IGNORE INTO metric_definitions VALUES (?,?,?,?,?,?,?)", defs)
     conn.commit()

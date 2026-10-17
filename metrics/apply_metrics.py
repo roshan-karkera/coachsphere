@@ -123,10 +123,36 @@ VIEWS = [
 ]
 
 
+_EXTRA_METRIC_DEFS = [
+    # coaching_roi added when the Coaching ROI page was introduced — safe to rerun (INSERT OR IGNORE)
+    (
+        'coaching_roi',
+        'Coaching ROI',
+        'Revenue gained from coaching relative to total coaching spend. Uplift is measured against a '
+        '65% baseline quota attainment — the assumed attainment without any coaching programme. '
+        'A ratio above 1.0 means the coaching programme returned more revenue than it cost.',
+        'revenue_gained / coaching_spend  where  '
+        'revenue_gained = rep_count * target_quota * max(0, avg_quota_attainment - 0.65)',
+        'ratio (e.g. 0.12 = 12%)',
+        'v1.0',
+        None,  # last_changed populated at runtime
+    ),
+]
+
+
 def main():
+    import datetime
     conn = sqlite3.connect(DB)
     for sql in VIEWS:
         conn.execute(sql.strip())
+    # Backfill any metric definitions not seeded by generate_data.py
+    for row in _EXTRA_METRIC_DEFS:
+        row = list(row)
+        if row[-1] is None:
+            row[-1] = datetime.datetime.now().isoformat()
+        conn.execute(
+            "INSERT OR IGNORE INTO metric_definitions VALUES (?,?,?,?,?,?,?)", row
+        )
     conn.commit()
     conn.close()
     print("Metrics layer ready.")

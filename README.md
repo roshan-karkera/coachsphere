@@ -83,13 +83,13 @@ coachsphere/
 ├── metrics/
 │   └── apply_metrics.py          # Creates all metric views + metric_definitions table
 ├── dashboard/
-│   └── app.py                    # Streamlit dashboard (8 pages, full dark theme)
+│   └── app.py                    # Streamlit dashboard (9 pages, full dark theme)
 ├── agent/
 │   ├── graph.py                  # LangGraph ReAct agent — create_react_agent + Groq
-│   ├── tools.py                  # 12 LangChain tools wrapping CoachSphere SQL views
+│   ├── tools.py                  # 13 LangChain tools wrapping CoachSphere SQL views
 │   └── run.py                    # CLI runner for the agent
 ├── mcp/
-│   ├── server.py                 # FastMCP server — 12 analytics tools via MCP
+│   ├── server.py                 # FastMCP server — 13 analytics tools via MCP
 │   ├── requirements.txt          # mcp[cli]>=1.0.0
 │   ├── claude_desktop_config.json # Drop into Claude Desktop settings
 │   └── SETUP.md                  # 3-step MCP connection guide
