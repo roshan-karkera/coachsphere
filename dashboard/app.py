@@ -346,13 +346,6 @@ section[data-testid="stSidebar"] .stButton:last-child {
     color: #e2e8f0 !important;
     -webkit-text-fill-color: #e2e8f0 !important;
 }
-/* Sidebar selectbox — force selected-value text visible */
-section[data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] > div > div,
-section[data-testid="stSidebar"] [data-testid="stSelectbox"] span,
-section[data-testid="stSidebar"] [data-testid="stSelectbox"] p {
-    color: #e2e8f0 !important;
-    -webkit-text-fill-color: #e2e8f0 !important;
-}
 /* Dropdown open — portal-level selectors */
 div[data-baseweb="popover"],
 div[data-baseweb="popover"] > div,
@@ -813,7 +806,7 @@ with st.sidebar:
     st.divider()
     sel_teams = ALL_TEAMS if _mgr['team'] == 'VP Sales' else [_mgr['team']]
     months_all = query("SELECT DISTINCT period_month FROM v_coaching_effectiveness ORDER BY period_month")['period_month'].tolist()
-    sel_month = st.selectbox("Reference Month", months_all, index=len(months_all)-1)
+    sel_month = months_all[-1] if months_all else "2024-06"
 
     # ── Quick Rep Search ──────────────────────────────────────────────────────
     st.divider()
@@ -2073,7 +2066,7 @@ elif page == "🔌 MCP Server":
         st.markdown('<div style="text-align:center;padding-top:28px;color:#475569;font-size:1.4rem;">⟷</div>', unsafe_allow_html=True)
     with cc:
         st.markdown("""<div class="arch-box" style="border-color:rgba(52,211,153,0.3)"><div class="arch-label">Data Layer</div>
-            <div class="arch-name">SQLite + SQL Views</div><div class="arch-sub" style="color:#34d399">6 metric views · 5 tables</div></div>""", unsafe_allow_html=True)
+            <div class="arch-name">SQLite + SQL Views</div><div class="arch-sub" style="color:#34d399">6 metric views · 6 tables</div></div>""", unsafe_allow_html=True)
     with cd:
         st.markdown('<div style="text-align:center;padding-top:28px;color:#475569;font-size:1.4rem;">⟷</div>', unsafe_allow_html=True)
     with ce:
@@ -2291,7 +2284,7 @@ elif page == "🔌 MCP Server":
             </div>
             <div style="display:flex;align-items:flex-start;gap:12px">
                 <span style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0">3</span>
-                <span style="color:#94a3b8;font-size:0.83rem;line-height:1.6">Restart Claude Desktop — all <span style="color:#34d399;font-weight:600">10 tools</span> appear automatically in the chat bar</span>
+                <span style="color:#94a3b8;font-size:0.83rem;line-height:1.6">Restart Claude Desktop — all <span style="color:#34d399;font-weight:600">13 tools</span> appear automatically in the chat bar</span>
             </div>
         </div>
     </div>""", unsafe_allow_html=True)
